@@ -1,16 +1,16 @@
-# :running: MLOps 101 with ZenML
+<!-- # :running: MLOps 101 with ZenML
 
 Build your first MLOps pipelines with ZenML.
 
 ## :earth_americas: Overview
 
-This repository is a minimalistic MLOps project intended as a starting point to learn how to put ML workflows in production. It features: 
+This repository is a minimalistic MLOps project intended as a starting point to learn how to put ML workflows in production. It features:
 
 - A feature engineering pipeline that loads data and prepares it for training.
 - A training pipeline that loads the preprocessed dataset and trains a model.
 - A batch inference pipeline that runs predictions on the trained model with new data.
 
-This is a representation of how it will all come together: 
+This is a representation of how it will all come together:
 
 <img src=".assets/pipeline_overview.png" width="70%" alt="Pipelines Overview">
 
@@ -101,9 +101,9 @@ python run.py --feature-pipeline
 After the pipeline has run, the pipeline will produce some logs like:
 
 ```shell
-The latest feature engineering pipeline produced the following artifacts: 
+The latest feature engineering pipeline produced the following artifacts:
 
-1. Train Dataset - Name: dataset_trn, Version Name: 1 
+1. Train Dataset - Name: dataset_trn, Version Name: 1
 2. Test Dataset: Name: dataset_tst, Version Name: 1
 ```
 
@@ -125,7 +125,7 @@ same data and then compare their performance.
 Run it by using the ID's from the first step:
 
 ```python
-# You can also ignore the `--train-dataset-version-name` and `--test-dataset-version-name` to use 
+# You can also ignore the `--train-dataset-version-name` and `--test-dataset-version-name` to use
 #  the latest versions
 python run.py --training-pipeline --train-dataset-version-name 1 --test-dataset-version-name 1
 ```
@@ -207,5 +207,5 @@ The best way to get a production ZenML instance up and running with all batterie
 
 Also, make sure to join our <a href="https://zenml.io/slack" target="_blank">
     <img width="15" src="https://cdn3.iconfinder.com/data/icons/logos-and-brands-adobe/512/306_Slack-512.png" alt="Slack"/>
-    <b>Slack Community</b> 
-</a> to become part of the ZenML family!
+    <b>Slack Community</b>
+</a> to become part of the ZenML family! -->

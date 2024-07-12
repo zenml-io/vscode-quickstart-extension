@@ -6,6 +6,7 @@ import Quickstart from "./Quickstart";
 import ZenmlViewProvider from "./ZenmlViewProvider";
 
 export async function activate(context: vscode.ExtensionContext) {
+  // @ts-ignore
   const quickstart = new Quickstart(quickstartMetadata, context);
   const provider = new ZenmlViewProvider(context.extensionUri, quickstart);
 
