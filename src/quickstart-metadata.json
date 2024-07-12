@@ -5,12 +5,12 @@
       "description": "Welcome to the ZenML Quickstart guide.",
       "steps": [
         {
-          "doc": "media/zenml/quickstart/welcome/welcome.md",
-          "code": "media/zenml/quickstart/welcome/code1.py"
+          "doc": "zenml-quickstart/sections/welcome/welcome.md",
+          "code": "zenml-quickstart/sections/welcome/code1.py"
         },
         {
-          "doc": "media/zenml/quickstart/welcome/finish.md",
-          "code": "media/zenml/quickstart/welcome/code1.py"
+          "doc": "zenml-quickstart/sections/welcome/finish.md",
+          "code": "zenml-quickstart/sections/welcome/code1.py"
         }
       ]
     },
@@ -19,12 +19,12 @@
       "description": "",
       "steps": [
         {
-          "doc": "media/zenml/quickstart/basic-pipeline/connect-to-zenml-cloud.md",
-          "code": "media/zenml/quickstart/basic-pipeline/code2.py"
+          "doc": "zenml-quickstart/sections/basic-pipeline/connect-to-zenml-cloud.md",
+          "code": "zenml-quickstart/sections/basic-pipeline/code2.py"
         },
         {
-          "doc": "media/zenml/quickstart/basic-pipeline/finish.md",
-          "code": "media/zenml/quickstart/basic-pipeline/code2.py"
+          "doc": "zenml-quickstart/sections/basic-pipeline/finish.md",
+          "code": "zenml-quickstart/sections/basic-pipeline/code2.py"
         }
       ]
     },
@@ -33,12 +33,12 @@
       "description": "",
       "steps": [
         {
-          "doc": "media/zenml/quickstart/loading-data/loading-data.md",
-          "code": "media/zenml/quickstart/loading-data/loading-data.py"
+          "doc": "zenml-quickstart/sections/loading-data/loading-data.md",
+          "code": "zenml-quickstart/sections/loading-data/loading-data.py"
         },
         {
-          "doc": "media/zenml/quickstart/loading-data/finish.md",
-          "code": "media/zenml/quickstart/loading-data/loading-data.py"
+          "doc": "zenml-quickstart/sections/loading-data/finish.md",
+          "code": "zenml-quickstart/sections/loading-data/loading-data.py"
         }
       ]
     }
