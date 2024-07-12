@@ -7,7 +7,7 @@ import ZenmlViewProvider from "./ZenmlViewProvider";
 
 export async function activate(context: vscode.ExtensionContext) {
   // set terminal starting directory (CWD)
-  changeVSCodeSetting("terminal.integrated.cwd", "/home/codespace/.vscode-remote/extensions/zenml.zenml-vscode-quickstart-0.0.1/media/zenml");
+  // changeVSCodeSetting("terminal.integrated.cwd", "/home/codespace/.vscode-remote/extensions/zenml.zenml-vscode-quickstart-0.0.1/media/zenml");
   // @ts-ignore
   const quickstart = new Quickstart(quickstartMetadata, context);
   const provider = new ZenmlViewProvider(context.extensionUri, quickstart);
