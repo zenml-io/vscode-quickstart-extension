@@ -8,7 +8,6 @@ import ZenmlViewProvider from "./ZenmlViewProvider";
 export async function activate(context: vscode.ExtensionContext) {
   // set terminal starting directory (CWD)
   // changeVSCodeSetting("terminal.integrated.cwd", "/home/codespace/.vscode-remote/extensions/zenml.zenml-vscode-quickstart-0.0.1/media/zenml");
-  // @ts-ignore
   const quickstart = new Quickstart(quickstartMetadata, context);
   const provider = new ZenmlViewProvider(context.extensionUri, quickstart);
 
@@ -31,7 +30,6 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 }
 
-
 // function changeVSCodeSetting(settingName: string, newValue: string) {
 //   // Get the workspace configuration
 //   const config = vscode.workspace.getConfiguration();
@@ -46,4 +44,4 @@ export async function activate(context: vscode.ExtensionContext) {
 // }
 
 // This method is called when your extension is deactivated
-export function deactivate() { }
+export function deactivate() {}
