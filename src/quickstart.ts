@@ -123,9 +123,10 @@ export default class Quickstart {
       }
 
       const filePath: string = this.editor.document.uri.fsPath;
-      const signalFilePath = this._initializeFileWatcher(filePath); // To automatically run
-
-      this._runCode(filePath, signalFilePath);
+      
+      // watcher to automatically run next step when current file runs
+      const { successFilePath, errorFilePath } = this._initializeFileWatcher(filePath); 
+      this._runCode(filePath, successFilePath, errorFilePath);
 
       this.terminal.show();
     } catch (error) {
@@ -133,7 +134,8 @@ export default class Quickstart {
     }
   }
 
-  private _runCode(filePath: string, signalFilePath: string) {
+  // package code into a bash script so user doesn't see watcher logic
+  private _runCode(filePath: string, successFilePath:string, errorFilePath:string) {
     if (!this.terminal) {
       this.terminal = vscode.window.createTerminal("ZenML Terminal");
     }
@@ -144,7 +146,11 @@ export default class Quickstart {
       scriptPath,
       `
     python "${filePath}"
-    touch "${signalFilePath}"
+    if [ $? -eq 0 ]; then
+      touch "${successFilePath}"
+    else
+      touch "${errorFilePath}"
+    fi
     `
     );
 
@@ -205,25 +211,35 @@ export default class Quickstart {
       sections.pop();
       return sections.join("/") + "/";
     };
-
+  
     const uniqueNumber = getNonce();
-    const signalFileName = `runcomplete${uniqueNumber}.txt`;
+    const successFileName = `runSuccess${uniqueNumber}.txt`;
+    const errorFileName = `runError${uniqueNumber}.txt`;
+  
     const pathWithoutEndFile = removeLastFileFromPath(path);
-    const signalFilePath = `${pathWithoutEndFile}${signalFileName}`;
-
-    // File System watcher for signal file
+    const successFilePath = `${pathWithoutEndFile}${successFileName}`;
+    const errorFilePath = `${pathWithoutEndFile}${errorFileName}`;
+  
+    // File System watcher for signal files
     const watcher = vscode.workspace.createFileSystemWatcher(
       new vscode.RelativePattern(pathWithoutEndFile, "*.txt")
     );
-
-    // Logic to run once the signal file is created, includes disposing watcher
-    watcher.onDidCreate(() => {
-      vscode.window.showInformationMessage("Code Run Successfully! 🎉");
-      vscode.workspace.fs.delete(vscode.Uri.file(signalFilePath));
-      this.openNextStep();
+  
+    // Logic to run once a signal file is created
+    watcher.onDidCreate((uri) => {
+      if (uri.fsPath.endsWith(successFileName)) {
+        vscode.window.showInformationMessage("Code Ran Successfully! 🎉");
+        this.openNextStep();
+      } else if (uri.fsPath.endsWith(errorFileName)) {
+        vscode.window.showErrorMessage("Code Run Encountered an Error. ❌");
+      }
+  
+      // Delete the signal file and dispose the watcher
+      vscode.workspace.fs.delete(uri);
       watcher.dispose();
     });
-
-    return signalFilePath;
+  
+    // Return paths for both success and error signal files for external use
+    return { successFilePath, errorFilePath };
   }
 }
