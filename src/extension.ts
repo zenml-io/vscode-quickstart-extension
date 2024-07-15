@@ -2,8 +2,8 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 import quickstartMetadata from "./quickstartMetadata.json";
-import Quickstart from "./quickstartClass";
-import ZenmlViewProvider from "./zenmlViewProviderClass";
+import Quickstart from "./quickstart";
+import ZenmlViewProvider from "./zenmlViewProvider";
 import { setCWD, unsetCWD } from "./utils/setExtensionCWD";
 
 export async function activate(context: vscode.ExtensionContext) {
