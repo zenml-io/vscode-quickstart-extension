@@ -38,7 +38,7 @@ export default class ZenmlViewProvider implements vscode.WebviewViewProvider {
           break;
         }
         case "runCodeFile": {
-          this._quickstart.runCode();
+          await this._quickstart.runCode();
           break;
         }
       }

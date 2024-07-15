@@ -100,13 +100,22 @@ export default class Quickstart {
     this.openSection(this.currentSectionIndex);
   }
 
-  runCode() {
+  async runCode() {
     try {
+      if (!this.editor) {
+        throw new Error("Editor is not defined");
+      }
+
       const activeEditorIsCurrentEditor =
         this.editor === vscode.window.activeTextEditor;
 
-      if (!this.editor || !activeEditorIsCurrentEditor) {
-        throw new Error("File has to be open and visible to execute");
+      if (!activeEditorIsCurrentEditor) {
+        await vscode.window
+          .showTextDocument(this.editor.document, {
+            preview: false,
+            preserveFocus: false,
+            viewColumn: vscode.ViewColumn.One
+          });
       }
 
       if (!this.terminal) {
@@ -120,7 +129,7 @@ export default class Quickstart {
 
       this.terminal.show();
     } catch (error) {
-      vscode.window.showErrorMessage(`File has to be open to execute.`);
+      vscode.window.showErrorMessage(`Failed to execute file: ${error}`);
     }
   }
 
