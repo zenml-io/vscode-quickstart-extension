@@ -20,7 +20,7 @@
     }
   },
   "containerEnv": {
-    "PYTHONPATH": "/workspaces/vscode-quickstart-extension/zenml-quickstart/quickstartModules"
+    "PYTHONPATH": "/workspaces/vscode-quickstart-extension/zenmlQuickstart/quickstartModules"
   },
   "onCreateCommand": "pip install zenml && zenml integration install sklearn -y && zenml init && zenml stack set default"
 }

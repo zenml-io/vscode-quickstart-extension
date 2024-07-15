@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import Quickstart from "./Quickstart";
+import Quickstart from "./quickstart";
 import getNonce from "./utils/getNonce";
 
 // Responsible for displaying Quickstart Steps
