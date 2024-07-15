@@ -7,6 +7,7 @@
       "settings": {
         "editor.formatOnSave": true,
         "files.insertFinalNewline": true
+        // "terminal.integrated.cwd": "/home/codespace/.vscode-remote/extensions/zenml.zenml-vscode-quickstart-0.0.1/zenml-quickstart"
       },
       // Add the IDs of extensions you want installed when the container is created.
       "extensions": [
@@ -15,8 +16,11 @@
       ]
     },
     "codespaces": {
-      "openFiles": ["media/firstSteps.md", "README.md"]
+      "openFiles": ["README.md"]
     }
   },
-  "onCreateCommand": "pip install zenml"
+  "containerEnv": {
+    "PYTHONPATH": "/workspaces/vscode-quickstart-extension/zenmlQuickstart/quickstartModules"
+  },
+  "onCreateCommand": "pip install zenml && zenml integration install sklearn -y && zenml init && zenml stack set default"
 }

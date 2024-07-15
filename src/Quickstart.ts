@@ -6,7 +6,7 @@ import { writeFileSync } from "fs";
 import os from "os";
 
 interface TutorialData {
-  sections: QuickstartSection[];
+  sections: Section[];
 }
 
 interface SectionStep {
@@ -14,7 +14,7 @@ interface SectionStep {
   code: string;
 }
 
-interface QuickstartSection {
+interface Section {
   title: string;
   description: string;
   steps: SectionStep[];
@@ -27,7 +27,7 @@ class QuickstartSection {
   currentStep: number;
   private _done = false;
 
-  constructor(section: QuickstartSection) {
+  constructor(section: Section) {
     this.title = section.title;
     this.description = section.description;
     this._steps = section.steps;
@@ -184,7 +184,7 @@ export default class Quickstart {
 
     this.panel.onDidDispose(() => {
       this.panel = undefined;
-    });   
+    });
   }
 
   // Watcher is created in the same directory as the file being executed

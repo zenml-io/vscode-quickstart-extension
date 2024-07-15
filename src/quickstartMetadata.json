@@ -1,0 +1,46 @@
+{
+  "sections": [
+    {
+      "title": "Welcome",
+      "description": "Welcome to the ZenML Quickstart guide.",
+      "steps": [
+        {
+          "doc": "zenmlQuickstart/sections/welcome/welcome.md",
+          "code": "zenmlQuickstart/sections/welcome/code1.py"
+        },
+        {
+          "doc": "zenmlQuickstart/sections/welcome/finish.md",
+          "code": "zenmlQuickstart/sections/welcome/code1.py"
+        }
+      ]
+    },
+    {
+      "title": "Cloud Signup and Basic Pipeline Run",
+      "description": "",
+      "steps": [
+        {
+          "doc": "zenmlQuickstart/sections/basicPipeline/connectToZenmlCloud.md",
+          "code": "zenmlQuickstart/sections/basicPipeline/code2.py"
+        },
+        {
+          "doc": "zenmlQuickstart/sections/basicPipeline/finish.md",
+          "code": "zenmlQuickstart/sections/basicPipeline/code2.py"
+        }
+      ]
+    },
+    {
+      "title": "Load in some data",
+      "description": "",
+      "steps": [
+        {
+          "doc": "zenmlQuickstart/sections/loadingData/loadingData.md",
+          "code": "zenmlQuickstart/sections/loadingData/loadingData.py"
+        },
+        {
+          "doc": "zenmlQuickstart/sections/loadingData/finish.md",
+          "code": "zenmlQuickstart/sections/loadingData/loadingData.py"
+        }
+      ]
+    }
+  ]
+}
