@@ -1,12 +1,20 @@
 import changeVSCodeSetting from "./changeVSCodeSetting";
+import * as vscode from "vscode";
 
-export default function setCWD() {
-  const isCodespace = process.env.CODESPACE === "true";
+export function setCWD() {
+  const isCodespace = process.env.CODESPACES === "true";
+  vscode.window.showInformationMessage(
+    `codespace env variable = ${process.env.CODESPACES}`
+  );
 
   changeVSCodeSetting(
     "terminal.integrated.cwd",
     `/home/codespace/${
       isCodespace ? ".vscode-remote" : ".vscode-server"
-    }/extensions/zenml.zenml-vscode-quickstart-0.0.1/media/zenml`
+    }/extensions/zenml.zenml-vscode-quickstart-0.0.1/zenml-quickstart/sections`
   );
+}
+
+export function unsetCWD() {
+  changeVSCodeSetting("terminal.integrated.cwd", "");
 }

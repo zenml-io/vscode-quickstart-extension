@@ -4,7 +4,7 @@ import * as vscode from "vscode";
 import quickstartMetadata from "./quickstart-metadata.json";
 import Quickstart from "./Quickstart";
 import ZenmlViewProvider from "./ZenmlViewProvider";
-import setCWD from "./utils/setExtensionCWD";
+import {setCWD, unsetCWD} from "./utils/setExtensionCWD";
 
 export async function activate(context: vscode.ExtensionContext) {
   // if running in production set correct cwd for local devcontainer or codespace
@@ -35,4 +35,7 @@ export async function activate(context: vscode.ExtensionContext) {
 }
 
 // This method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() {
+  // Sets cwd back to default
+  unsetCWD();
+}
