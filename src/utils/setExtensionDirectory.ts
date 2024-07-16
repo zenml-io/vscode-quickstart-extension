@@ -4,7 +4,7 @@ export default async function setDirectory() {
   const isCodespace = process.env.CODESPACES === "true";
 
   const targetUri = vscode.Uri.file(
-    `/home/codespace/${
+    `/root/${
       isCodespace ? ".vscode-remote" : ".vscode-server"
     }/extensions/zenml.zenml-vscode-quickstart-0.0.1/zenmlQuickstart/sections`
   );
