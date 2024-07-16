@@ -4,12 +4,12 @@ import * as vscode from "vscode";
 import quickstartMetadata from "./quickstartMetadata.json";
 import Quickstart from "./quickstart";
 import ZenmlViewProvider from "./zenmlViewProvider";
-import { setCWD, unsetCWD } from "./utils/setExtensionCWD";
+import setDirectory from "./utils/setExtensionDirectory";
 
 export async function activate(context: vscode.ExtensionContext) {
-  // if running in production set correct cwd for local devcontainer or codespace
+  // if running in production set working directory for local devcontainer or codespace
   if (context.extensionMode === vscode.ExtensionMode.Production) {
-    setCWD();
+    setDirectory();
   }
 
   const quickstart = new Quickstart(quickstartMetadata, context);
@@ -22,6 +22,9 @@ export async function activate(context: vscode.ExtensionContext) {
       provider
     )
   );
+
+  // Focuses the webview side panel
+  await vscode.commands.executeCommand("zenml.stepsView.focus");
 
   // If a user closes the terminal the extension opened we set it
   // back to undefined so we know to open a new terminal
@@ -37,7 +40,4 @@ export async function activate(context: vscode.ExtensionContext) {
 }
 
 // This method is called when your extension is deactivated
-export function deactivate() {
-  // Sets cwd back to default
-  unsetCWD();
-}
+export function deactivate() {}
