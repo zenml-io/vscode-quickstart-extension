@@ -110,7 +110,7 @@ export default class ZenmlViewProvider implements vscode.WebviewViewProvider {
     }</p>
   </footer>
 
-  <button class="accordion section" data-id="0">Welcome</button>
+  <!-- <button class="accordion section" data-id="0">Welcome</button> -->
   <!-- <div class="panel">
     <p>Welcome! This is some text over here</p>
 
