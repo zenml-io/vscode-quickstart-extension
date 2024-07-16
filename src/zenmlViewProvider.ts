@@ -30,18 +30,20 @@ export default class ZenmlViewProvider implements vscode.WebviewViewProvider {
     };
     const refreshWebview = () => {
       webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
-    }
+    };
 
     refreshWebview();
     webviewView.webview.onDidReceiveMessage(async (data) => {
       switch (data.type) {
         case "openSection": {
           this._quickstart.openSection(data.id);
-          refreshWebview()
+          refreshWebview();
           break;
         }
         case "runCodeFile": {
-          await this._quickstart.runCode(() => { refreshWebview()});
+          await this._quickstart.runCode(() => {
+            refreshWebview();
+          });
           break;
         }
         case "resetSection": {
@@ -73,7 +75,7 @@ export default class ZenmlViewProvider implements vscode.WebviewViewProvider {
     // Use a nonce to only allow a specific script to be run.
     const nonce = getNonce();
 
-    return /*html*/`
+    return /*html*/ `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -103,7 +105,11 @@ export default class ZenmlViewProvider implements vscode.WebviewViewProvider {
   <p>${this._quickstart.currentSection.description}</p>
   <button class="run-code">Execute Current Code</button>
   <button class="reset-section">Reset Section</button>
-  <button class="next-section ${(this._quickstart.currentSection.isDone() ? '' : 'hide')}" data-id="${this._quickstart.currentSectionIndex + 1}">Go to next section</button>
+  <button class="next-section ${
+    this._quickstart.currentSection.isDone() ? "" : "hide"
+  }" data-id="${
+      this._quickstart.currentSectionIndex + 1
+    }">Go to next section</button>
   <footer>  
     <p>Section ${this._quickstart.currentSectionIndex + 1} of ${
       this._quickstart.sections.length
