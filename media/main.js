@@ -13,6 +13,18 @@
     });
   });
 
+  document.querySelector(".next-section")?.addEventListener("click", (element) => {
+    //@ts-ignore for dataset
+    const id = parseInt(element.target?.dataset.id, 10);
+      handleOpenSection(id);
+  })
+
+  document.querySelector(".reset-section")?.addEventListener("click", (element) => {
+    //@ts-ignore for dataset
+    const id = parseInt(element.target?.dataset.id, 10);
+      handleReset();
+  })
+
   document.querySelectorAll(".run-code").forEach((element) => {
     element.addEventListener("click", () => {
       handleRunCode();
@@ -26,6 +38,11 @@
   function handleOpenSection(id) {
     vscode.postMessage({ type: "openSection", id });
   }
+
+  function handleReset() {
+    vscode.postMessage({type: "resetSection"});
+  }
+
 })();
 
 (function () {

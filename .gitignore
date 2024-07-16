@@ -4,6 +4,8 @@ node_modules
 .vscode-test/
 .DS_Store
 .zen
+**/runSuccess*.txt
+**/runError*.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

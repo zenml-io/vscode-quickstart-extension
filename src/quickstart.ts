@@ -38,7 +38,8 @@ class QuickstartSection {
   nextStep() {
     if (this.currentStep + 1 < this._steps.length) {
       this.currentStep++;
-    } else {
+    } 
+    if (this.currentStep >= this._steps.length - 1) {
       this._done = true;
     }
   }
@@ -53,9 +54,10 @@ class QuickstartSection {
 
   reset() {
     this.currentStep = 0;
+    this._done = false;
   }
 
-  done?() {
+  isDone() {
     return this._done;
   }
 }
@@ -68,6 +70,7 @@ export default class Quickstart {
   public sections: QuickstartSection[];
   public context: vscode.ExtensionContext;
   public currentSectionIndex = 0;
+  public currentSection: QuickstartSection;
 
   constructor(metadata: TutorialData, context: vscode.ExtensionContext) {
     this.metadata = metadata;
@@ -75,11 +78,11 @@ export default class Quickstart {
       return new QuickstartSection(section);
     });
     this.context = context;
+    this.currentSection = this.sections[0];
   }
 
   async openSection(sectionId: number) {
-    this.currentSectionIndex = sectionId; // set current step to opened section -- should probbaly include some verification that that step exists first
-    const currentSection = this.sections[this.currentSectionIndex];
+    this._setSection(sectionId);
 
     await vscode.commands.executeCommand("vscode.setEditorLayout", {
       orientation: 0,
@@ -89,24 +92,31 @@ export default class Quickstart {
       ],
     });
 
-    this.openCodePanel(currentSection.code());
-    this.openDocPanel(currentSection.title, currentSection.doc());
+    this.openCodePanel(this.currentSection.code());
+    this.openDocPanel(this.currentSection.title, this.currentSection.doc());
   }
 
   openNextStep() {
-    const currentSection = this.sections[this.currentSectionIndex];
-    currentSection.nextStep();
+    this.currentSection.nextStep();
 
     this.openSection(this.currentSectionIndex);
   }
 
-  runCode() {
+  async runCode(callback?: Function) {
     try {
+      if (!this.editor) {
+        throw new Error("Editor is not defined");
+      }
+
       const activeEditorIsCurrentEditor =
         this.editor === vscode.window.activeTextEditor;
 
-      if (!this.editor || !activeEditorIsCurrentEditor) {
-        throw new Error("File has to be open and visible to execute");
+      if (!activeEditorIsCurrentEditor) {
+        await vscode.window.showTextDocument(this.editor.document, {
+          preview: false,
+          preserveFocus: false,
+          viewColumn: vscode.ViewColumn.One,
+        });
       }
 
       if (!this.terminal) {
@@ -114,17 +124,24 @@ export default class Quickstart {
       }
 
       const filePath: string = this.editor.document.uri.fsPath;
-      const signalFilePath = this._initializeFileWatcher(filePath); // To automatically run
 
-      this._runCode(filePath, signalFilePath);
+      // watcher to automatically run next step when current file runs
+      const { successFilePath, errorFilePath } =
+        this._initializeFileWatcher(filePath, callback);
+      this._runCode(filePath, successFilePath, errorFilePath);
 
       this.terminal.show();
     } catch (error) {
-      vscode.window.showErrorMessage(`File has to be open to execute.`);
+      vscode.window.showErrorMessage(`Failed to execute file: ${error}`);
     }
   }
 
-  private _runCode(filePath: string, signalFilePath: string) {
+  // package code into a bash script so user doesn't see watcher logic
+  private _runCode(
+    filePath: string,
+    successFilePath: string,
+    errorFilePath: string
+  ) {
     if (!this.terminal) {
       this.terminal = vscode.window.createTerminal("ZenML Terminal");
     }
@@ -135,7 +152,11 @@ export default class Quickstart {
       scriptPath,
       `
     python "${filePath}"
-    touch "${signalFilePath}"
+    if [ $? -eq 0 ]; then
+      touch "${successFilePath}"
+    else
+      touch "${errorFilePath}"
+    fi
     `
     );
 
@@ -174,6 +195,15 @@ export default class Quickstart {
 
   // PRIVATE METHODS:
 
+  private _setSection(index: number) {
+    if (index > -1 && index < this.sections.length) {
+      this.currentSectionIndex = index;
+      this.currentSection = this.sections[index];
+    } else {
+      throw new Error("Invalid Index");
+    }
+  }
+
   private _initializePanel() {
     this.panel = vscode.window.createWebviewPanel(
       "zenml.markdown", // used internally - I think an identifier
@@ -190,7 +220,7 @@ export default class Quickstart {
   // Watcher is created in the same directory as the file being executed
   // So we're taking in the path to the file being executed and manipulating it
   // to get the directory
-  private _initializeFileWatcher(path: string) {
+  private _initializeFileWatcher(path: string, onSuccessCallback?: Function) {
     const removeLastFileFromPath = (filePath: string) => {
       let sections = filePath.split("/");
       sections.pop();
@@ -198,23 +228,34 @@ export default class Quickstart {
     };
 
     const uniqueNumber = getNonce();
-    const signalFileName = `runcomplete${uniqueNumber}.txt`;
-    const pathWithoutEndFile = removeLastFileFromPath(path);
-    const signalFilePath = `${pathWithoutEndFile}${signalFileName}`;
+    const successFileName = `runSuccess${uniqueNumber}.txt`;
+    const errorFileName = `runError${uniqueNumber}.txt`;
 
-    // File System watcher for signal file
+    const pathWithoutEndFile = removeLastFileFromPath(path);
+    const successFilePath = `${pathWithoutEndFile}${successFileName}`;
+    const errorFilePath = `${pathWithoutEndFile}${errorFileName}`;
+
+    // File System watcher for signal files
     const watcher = vscode.workspace.createFileSystemWatcher(
       new vscode.RelativePattern(pathWithoutEndFile, "*.txt")
     );
 
-    // Logic to run once the signal file is created, includes disposing watcher
-    watcher.onDidCreate(() => {
-      vscode.window.showInformationMessage("Code Run Successfully! 🎉");
-      vscode.workspace.fs.delete(vscode.Uri.file(signalFilePath));
-      this.openNextStep();
+    // Logic to run once a signal file is created
+    watcher.onDidCreate((uri) => {
+      if (uri.fsPath.endsWith(successFileName)) {
+        vscode.window.showInformationMessage("Code Ran Successfully! 🎉");
+        this.openNextStep();
+        if (onSuccessCallback) onSuccessCallback();
+      } else if (uri.fsPath.endsWith(errorFileName)) {
+        vscode.window.showErrorMessage("Code Run Encountered an Error. ❌");
+      }
+
+      // Delete the signal file and dispose the watcher
+      vscode.workspace.fs.delete(uri);
       watcher.dispose();
     });
 
-    return signalFilePath;
+    // Return paths for both success and error signal files for external use
+    return { successFilePath, errorFilePath };
   }
 }

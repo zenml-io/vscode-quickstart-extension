@@ -32,6 +32,8 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     })
   );
+
+  quickstart.openSection(0);
 }
 
 // This method is called when your extension is deactivated
