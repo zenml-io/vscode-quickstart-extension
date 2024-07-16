@@ -7,7 +7,7 @@ import ZenmlViewProvider from "./zenmlViewProvider";
 import setDirectory from "./utils/setExtensionDirectory";
 
 export async function activate(context: vscode.ExtensionContext) {
-  // if running in production set correct cwd for local devcontainer or codespace
+  // if running in production set working directory for local devcontainer or codespace
   if (context.extensionMode === vscode.ExtensionMode.Production) {
     setDirectory();
   }

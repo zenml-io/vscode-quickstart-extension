@@ -43,7 +43,8 @@
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "test": "vscode-test",
-    "buildExtension:replace": "vsce package && rm .devcontainer/extensions/zenml-vscode* && mv zenml-vscode* .devcontainer/extensions"
+    "buildExtension:replace": "vsce package && rm .devcontainer/extensions/zenml-vscode* && mv zenml-vscode* .devcontainer/extensions && npm run moveExtension:quickstart",
+    "moveExtension:quickstart": "rm ../vscode-quickstart/.devcontainer/extensions/zenml-vscode-quickstart* && cp .devcontainer/extensions/zenml-vscode* ../vscode-quickstart/.devcontainer/extensions"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.7",
