@@ -25,3 +25,12 @@ body {
   /* background-color: white; */
   overflow: hidden;
 }
+
+.hide {
+  display: none;
+}
+
+footer {
+  position: absolute;
+  bottom: 0px;
+}

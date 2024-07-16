@@ -38,7 +38,8 @@ class QuickstartSection {
   nextStep() {
     if (this.currentStep + 1 < this._steps.length) {
       this.currentStep++;
-    } else {
+    } 
+    if (this.currentStep >= this._steps.length - 1) {
       this._done = true;
     }
   }
@@ -53,9 +54,10 @@ class QuickstartSection {
 
   reset() {
     this.currentStep = 0;
+    this._done = false;
   }
 
-  done?() {
+  isDone() {
     return this._done;
   }
 }
@@ -100,7 +102,7 @@ export default class Quickstart {
     this.openSection(this.currentSectionIndex);
   }
 
-  async runCode() {
+  async runCode(callback?: Function) {
     try {
       if (!this.editor) {
         throw new Error("Editor is not defined");
@@ -125,7 +127,7 @@ export default class Quickstart {
 
       // watcher to automatically run next step when current file runs
       const { successFilePath, errorFilePath } =
-        this._initializeFileWatcher(filePath);
+        this._initializeFileWatcher(filePath, callback);
       this._runCode(filePath, successFilePath, errorFilePath);
 
       this.terminal.show();
@@ -218,7 +220,7 @@ export default class Quickstart {
   // Watcher is created in the same directory as the file being executed
   // So we're taking in the path to the file being executed and manipulating it
   // to get the directory
-  private _initializeFileWatcher(path: string) {
+  private _initializeFileWatcher(path: string, onSuccessCallback?: Function) {
     const removeLastFileFromPath = (filePath: string) => {
       let sections = filePath.split("/");
       sections.pop();
@@ -243,6 +245,7 @@ export default class Quickstart {
       if (uri.fsPath.endsWith(successFileName)) {
         vscode.window.showInformationMessage("Code Ran Successfully! 🎉");
         this.openNextStep();
+        if (onSuccessCallback) onSuccessCallback();
       } else if (uri.fsPath.endsWith(errorFileName)) {
         vscode.window.showErrorMessage("Code Run Encountered an Error. ❌");
       }
