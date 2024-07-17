@@ -1,3 +1,10 @@
+from zenml import Model
+from zenml.client import Client
+from pipelines import training
+
+# Initialize the ZenML client to fetch objects from the ZenML Server
+client = Client()
+
 pipeline_settings = {}
 
 # Lets add some metadata to the model to make it identifiable

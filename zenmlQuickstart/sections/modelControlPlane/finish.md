@@ -1,3 +1,4 @@
+# 🏔️ Step 6: Use the Model Control Plane
 If you are a [ZenML Cloud](https://zenml.io/cloud) user, you can see all of this visualized in the dashboard:
 
 <img src=".assets/cloud_mcp_screenshot.png" width="70%" alt="Model Control Plane">

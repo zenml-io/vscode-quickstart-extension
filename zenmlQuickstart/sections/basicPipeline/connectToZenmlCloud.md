@@ -1,4 +1,4 @@
-## ☁️ Step 1: Connect to ZenML Cloud
+# 🏔️ Step 1: Connect to ZenML Cloud
 
 If you are using [ZenML Cloud](https://zenml.io/cloud), execute the following
 cell with your tenant URL. Otherwise ignore.

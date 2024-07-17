@@ -1,14 +1,5 @@
-# imports (not sure about it)
-from typing_extensions import Annotated
-from sklearn.datasets import load_breast_cancer
-
-import random
-import pandas as pd
-from rich import print
-from zenml import step, pipeline, Model, get_step_context
+from zenml import pipeline
 from zenml.client import Client
-from zenml.logger import get_logger
-from uuid import UUID
 
 from typing import Optional, List
 
@@ -17,14 +8,8 @@ from zenml import pipeline
 from steps import (
     data_loader,
     data_preprocessor,
-    data_splitter,
-    model_evaluator,
-    inference_preprocessor
+    data_splitter
 )
-
-from zenml.logger import get_logger
-
-logger = get_logger(__name__)
 
 # Initialize the ZenML client to fetch objects from the ZenML Server
 client = Client()
@@ -55,5 +40,5 @@ def feature_engineering(
         target=target,
         random_state=random_state,
     )
-    
+
 feature_engineering(test_size=0.25)

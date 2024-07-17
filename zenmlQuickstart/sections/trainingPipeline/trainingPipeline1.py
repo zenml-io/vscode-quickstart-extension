@@ -5,9 +5,16 @@ from sklearn.linear_model import SGDClassifier
 from typing_extensions import Annotated
 from zenml import ArtifactConfig, step, pipeline
 from zenml.logger import get_logger
-
+from typing import Optional, List
+from uuid import UUID
 logger = get_logger(__name__)
 
+from pipelines import feature_engineering 
+from steps import model_evaluator
+from zenml.client import Client
+
+# Initialize the ZenML client to fetch objects from the ZenML Server
+client = Client()
 
 @step
 def model_trainer(
@@ -39,6 +46,8 @@ def training(
     min_train_accuracy: float = 0.0,
     min_test_accuracy: float = 0.0,
 ):
+    
+    
     """Model training pipeline.""" 
     if train_dataset_id is None or test_dataset_id is None:
         # If we dont pass the IDs, this will run the feature engineering pipeline   
@@ -64,9 +73,7 @@ def training(
 # Use a random forest model with the chosen datasets.
 # We need to pass the ID's of the datasets into the function
 training(
-    model_type="rf",
-    train_dataset_id=dataset_trn_artifact_version.id,
-    test_dataset_id=dataset_tst_artifact_version.id
+    model_type="rf"
 )
 
 rf_run = client.get_pipeline("training").last_run

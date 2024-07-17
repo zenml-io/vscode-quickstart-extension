@@ -44,7 +44,7 @@
     },
     {
       "title": "Feature Engineering",
-      "description": "some text saying that we're now at the right point to actually run the pipeline, since we've defined logic for the various steps.",
+      "description": "",
       "steps": [
         {
           "doc": "zenmlQuickstart/sections/featureEngineering/featureEngineering1.md",
@@ -58,7 +58,7 @@
     },
     {
       "title": "Feature Engineering with Cache",
-      "description": "Let's run this again with a slightly different test size, to create more datasets.",
+      "description": "",
       "steps": [
         {
           "doc": "zenmlQuickstart/sections/featureEngineering2/featureEngineering2.md",
@@ -122,7 +122,8 @@
       "description": "Now that we've produced a few models, we're going to learn how to manage them.",
       "steps": [
         {
-          "doc": "zenmlQuickstart/sections/nextSteps/congratulations.md"
+          "doc": "zenmlQuickstart/sections/nextSteps/congratulations.md",
+          "code": "zenmlQuickstart/sections/consumingModel/consumingModel.py"
         }
       ]
     }

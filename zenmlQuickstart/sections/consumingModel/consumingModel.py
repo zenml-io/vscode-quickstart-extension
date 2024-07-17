@@ -1,3 +1,16 @@
+from typing_extensions import Annotated
+import pandas as pd
+from zenml import step, pipeline, Model, get_step_context
+from zenml.client import Client
+from uuid import UUID
+from zenml import pipeline
+from steps import (
+    data_loader,
+    inference_preprocessor
+)
+
+client = Client()
+
 @step
 def inference_predict(dataset_inf: pd.DataFrame) -> Annotated[pd.Series, "predictions"]:
     """Predictions step"""
@@ -51,6 +64,7 @@ inference_configured = inference.with_options(**pipeline_settings)
 # Let's run it again to make sure we have two versions
 # We need to pass in the ID of the preprocessing done in the feature engineering pipeline
 # in order to avoid training-serving skew
+
 inference_configured(
     preprocess_pipeline_id=preprocessing_pipeline_artifact_version.id
 )

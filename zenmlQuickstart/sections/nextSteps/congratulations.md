@@ -1,4 +1,4 @@
-## Congratulations!
+# Congratulations!
 
 You're a legit MLOps engineer now! You trained two models, evaluated them against
 a test set, registered the best one with the ZenML model control plane,
