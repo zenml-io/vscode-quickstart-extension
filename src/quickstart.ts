@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import path from "path";
 import generateHTMLfromMD from "./utils/generateHTMLfromMD";
 import getNonce from "./utils/getNonce";
-import { writeFileSync } from "fs";
+import { writeFileSync, readFileSync } from "fs";
 import os from "os";
 
 interface TutorialData {
@@ -12,6 +12,7 @@ interface TutorialData {
 interface SectionStep {
   doc: string;
   code: string;
+  html?: string;
 }
 
 interface Section {
@@ -22,12 +23,14 @@ interface Section {
 
 class QuickstartSection {
   title: string;
+  public context: vscode.ExtensionContext;
   description: string;
   _steps: SectionStep[];
   currentStep: number;
   private _done = false;
 
-  constructor(section: Section) {
+  constructor(section: Section, context: vscode.ExtensionContext) {
+    this.context = context;
     this.title = section.title;
     this.description = section.description;
     this._steps = section.steps;
@@ -50,6 +53,20 @@ class QuickstartSection {
 
   code() {
     return this._steps[this.currentStep].code;
+  }
+
+  html() {
+    const file = this._steps[this.currentStep].html;
+
+    if (file) {
+      const htmlPath = path.join(this.context.extensionPath, file);
+      const htmlContent = readFileSync(htmlPath, { encoding: "utf-8" });
+
+      return htmlContent;
+    } else {
+      return ""
+    }
+
   }
 
   reset() {
@@ -75,7 +92,7 @@ export default class Quickstart {
   constructor(metadata: TutorialData, context: vscode.ExtensionContext) {
     this.metadata = metadata;
     this.sections = this.metadata.sections.map((section) => {
-      return new QuickstartSection(section);
+      return new QuickstartSection(section, context);
     });
     this.context = context;
     this.currentSection = this.sections[0];
