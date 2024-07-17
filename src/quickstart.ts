@@ -38,7 +38,7 @@ class QuickstartSection {
   nextStep() {
     if (this.currentStep + 1 < this._steps.length) {
       this.currentStep++;
-    } 
+    }
     if (this.currentStep >= this._steps.length - 1) {
       this._done = true;
     }
@@ -126,8 +126,10 @@ export default class Quickstart {
       const filePath: string = this.editor.document.uri.fsPath;
 
       // watcher to automatically run next step when current file runs
-      const { successFilePath, errorFilePath } =
-        this._initializeFileWatcher(filePath, callback);
+      const { successFilePath, errorFilePath } = this._initializeFileWatcher(
+        filePath,
+        callback
+      );
       this._runCode(filePath, successFilePath, errorFilePath);
 
       this.terminal.show();
@@ -151,6 +153,8 @@ export default class Quickstart {
     writeFileSync(
       scriptPath,
       `
+    clear
+    echo "Executing code..."
     python "${filePath}"
     if [ $? -eq 0 ]; then
       touch "${successFilePath}"
