@@ -17,7 +17,12 @@
     //@ts-ignore for dataset
     const id = parseInt(element.target?.dataset.id, 10);
       handleOpenSection(id);
-  })
+  });
+
+  document.querySelector(".next-step")?.addEventListener("click", (element) => {
+    //@ts-ignore for dataset
+      handleNextStep();
+  });
 
   document.querySelector(".reset-section")?.addEventListener("click", (element) => {
     //@ts-ignore for dataset
@@ -41,6 +46,10 @@
 
   function handleReset() {
     vscode.postMessage({type: "resetSection"});
+  }
+
+  function handleNextStep() {
+    vscode.postMessage({type: "nextStep"});
   }
 
 })();
