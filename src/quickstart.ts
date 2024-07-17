@@ -11,6 +11,7 @@ interface TutorialData {
 
 interface SectionStep {
   doc: string;
+  docHTML?: string;
   code: string;
   html?: string;
 }
@@ -22,11 +23,11 @@ interface Section {
 }
 
 class QuickstartSection {
-  title: string;
+  public title: string;
   public context: vscode.ExtensionContext;
-  description: string;
-  _steps: SectionStep[];
-  currentStep: number;
+  public description: string;
+  public currentStep: number;
+  private _steps: SectionStep[];
   private _done = false;
 
   constructor(section: Section, context: vscode.ExtensionContext) {
@@ -34,6 +35,7 @@ class QuickstartSection {
     this.title = section.title;
     this.description = section.description;
     this._steps = section.steps;
+    this._convertStepMarkdown();
     this.currentStep = 0;
     return this;
   }
@@ -41,7 +43,7 @@ class QuickstartSection {
   nextStep() {
     if (this.currentStep + 1 < this._steps.length) {
       this.currentStep++;
-    } 
+    }
     if (this.currentStep >= this._steps.length - 1) {
       this._done = true;
     }
@@ -49,6 +51,12 @@ class QuickstartSection {
 
   doc() {
     return this._steps[this.currentStep].doc;
+  }
+
+  docHTML() {
+    const html = this._steps[this.currentStep].docHTML;
+
+    return html ? html : "";
   }
 
   code() {
@@ -64,9 +72,8 @@ class QuickstartSection {
 
       return htmlContent;
     } else {
-      return ""
+      return "";
     }
-
   }
 
   reset() {
@@ -76,6 +83,13 @@ class QuickstartSection {
 
   isDone() {
     return this._done;
+  }
+
+  private _convertStepMarkdown() {
+    this._steps.forEach((step) => {
+      const tutorialPath = path.join(this.context.extensionPath, step.doc);
+      step.docHTML = generateHTMLfromMD(tutorialPath);
+    });
   }
 }
 
@@ -110,7 +124,7 @@ export default class Quickstart {
     });
 
     this.openCodePanel(this.currentSection.code());
-    this.openDocPanel(this.currentSection.title, this.currentSection.doc());
+    this.openDocPanel(this.currentSection.title, this.currentSection.docHTML());
   }
 
   openNextStep() {
@@ -143,8 +157,10 @@ export default class Quickstart {
       const filePath: string = this.editor.document.uri.fsPath;
 
       // watcher to automatically run next step when current file runs
-      const { successFilePath, errorFilePath } =
-        this._initializeFileWatcher(filePath, callback);
+      const { successFilePath, errorFilePath } = this._initializeFileWatcher(
+        filePath,
+        callback
+      );
       this._runCode(filePath, successFilePath, errorFilePath);
 
       this.terminal.show();
@@ -182,17 +198,15 @@ export default class Quickstart {
 
   // HELPERS
 
-  openDocPanel(title: string, docPath: string) {
+  openDocPanel(title: string, docContent: string) {
     if (!this.panel) {
       this._initializePanel();
     }
 
-    const tutorialPath = path.join(this.context.extensionPath, docPath);
-
     // nullcheck to make typescript happy
     if (this.panel) {
       this.panel.title = title;
-      this.panel.webview.html = generateHTMLfromMD(tutorialPath);
+      this.panel.webview.html = docContent;
     }
   }
 
