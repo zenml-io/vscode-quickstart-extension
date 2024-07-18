@@ -37,6 +37,7 @@ export default class ZenmlViewProvider implements vscode.WebviewViewProvider {
       switch (data.type) {
         case "openSection": {
           this._quickstart.openSection(data.id);
+          this._quickstart.closeTerminal();
           refreshWebview();
           break;
         }
@@ -49,6 +50,7 @@ export default class ZenmlViewProvider implements vscode.WebviewViewProvider {
         case "resetSection": {
           this._quickstart.currentSection.reset();
           this._quickstart.openSection(this._quickstart.currentSectionIndex);
+          this._quickstart.closeTerminal();
           refreshWebview();
           break;
         }
@@ -56,6 +58,7 @@ export default class ZenmlViewProvider implements vscode.WebviewViewProvider {
           this._quickstart.sendTerminalCommand(
             `zenml connect --url "${data.url}"`
           );
+          break;
         }
       }
     });

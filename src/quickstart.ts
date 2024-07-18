@@ -116,6 +116,10 @@ export default class Quickstart {
     this._terminal = value;
   }
 
+  public closeTerminal() {
+    this._terminal?.hide();
+  }
+
   public get terminal(): vscode.Terminal {
     if (this._terminal === undefined) {
       this._terminal = vscode.window.createTerminal("ZenML Terminal");
@@ -146,7 +150,7 @@ export default class Quickstart {
   }
 
   sendTerminalCommand(command: string) {
-    this.terminal.show();
+    this.terminal.show(true);
     this.terminal.sendText(command);
   }
 
@@ -176,7 +180,7 @@ export default class Quickstart {
       );
       this._runCode(filePath, successFilePath, errorFilePath);
 
-      this.terminal.show();
+      this.terminal.show(true);
     } catch (error) {
       vscode.window.showErrorMessage(`Failed to execute file: ${error}`);
     }
@@ -188,7 +192,6 @@ export default class Quickstart {
     successFilePath: string,
     errorFilePath: string
   ) {
-
     const scriptPath = path.join(os.tmpdir(), "runCode.sh");
 
     writeFileSync(
