@@ -184,6 +184,8 @@ export default class Quickstart {
     writeFileSync(
       scriptPath,
       `
+    clear
+    echo "Executing code..."
     python "${filePath}"
     if [ $? -eq 0 ]; then
       touch "${successFilePath}"
