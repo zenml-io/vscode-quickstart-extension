@@ -4,7 +4,8 @@ from pipelines import training
 
 # Initialize the ZenML client to fetch objects from the ZenML Server
 client = Client()
-
+dataset_trn_artifact_version = client.get_artifact_version("dataset_trn")
+dataset_tst_artifact_version = client.get_artifact_version("dataset_tst")
 pipeline_settings = {}
 
 # Lets add some metadata to the model to make it identifiable

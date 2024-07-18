@@ -10,6 +10,7 @@ from steps import (
 )
 
 client = Client()
+preprocessing_pipeline_artifact_version = client.get_artifact_version("preprocess_pipeline")
 
 @step
 def inference_predict(dataset_inf: pd.DataFrame) -> Annotated[pd.Series, "predictions"]:

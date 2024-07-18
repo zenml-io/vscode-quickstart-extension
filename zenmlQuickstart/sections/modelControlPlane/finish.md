@@ -1,7 +1,7 @@
 # 🏔️ Step 6: Use the Model Control Plane
 If you are a [ZenML Cloud](https://zenml.io/cloud) user, you can see all of this visualized in the dashboard:
 
-<img src=".assets/cloud_mcp_screenshot.png" width="70%" alt="Model Control Plane">
+<img src="/zenmlQuickstart/assets/cloud_mcp_screenshot.png" width="70%" alt="Model Control Plane">
 
 There is a lot more you can do with ZenML models, including the ability to
 track metrics by adding metadata to it, or having them persist in a model

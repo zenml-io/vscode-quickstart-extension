@@ -15,7 +15,8 @@ from zenml.client import Client
 
 # Initialize the ZenML client to fetch objects from the ZenML Server
 client = Client()
-
+dataset_trn_artifact_version = client.get_artifact_version("dataset_trn")
+dataset_tst_artifact_version = client.get_artifact_version("dataset_tst")
 @step
 def model_trainer(
     dataset_trn: pd.DataFrame,
@@ -70,14 +71,16 @@ def training(
         min_test_accuracy=min_test_accuracy,
     )
     
+
 # Use a random forest model with the chosen datasets.
 # We need to pass the ID's of the datasets into the function
 training(
-    model_type="rf"
+    model_type="rf",
+    train_dataset_id=dataset_trn_artifact_version.id,
+    test_dataset_id=dataset_tst_artifact_version.id
 )
 
 rf_run = client.get_pipeline("training").last_run
-
 # Use a SGD classifier
 sgd_run = training(
     model_type="sgd",
@@ -88,4 +91,5 @@ sgd_run = training(
 sgd_run = client.get_pipeline("training").last_run
 
 # The evaluator returns a float value with the accuracy
+
 print(rf_run.steps["model_evaluator"].output.load() > sgd_run.steps["model_evaluator"].output.load())

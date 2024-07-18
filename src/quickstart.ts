@@ -37,6 +37,7 @@ class QuickstartSection {
     this._convertStepMarkdown();
     this.currentStep = 0;
     return this;
+
   }
 
   nextStep() {
@@ -190,6 +191,15 @@ export default class Quickstart {
     if (!this.panel) {
       this._initializePanel();
     }
+
+    // check if doc content has images
+    // if so, replace the image source with vscode URI
+    docContent = docContent.replace(/<img\s+[^>]*src="([^"]*)"[^>]*>/g, (match, originalSrc) => {
+      // Example transformation: Append '-placeholder' to the original filename before the extension
+      const onDiskPath = vscode.Uri.joinPath(this.context.extensionUri, originalSrc);
+      const newSrc = this.panel?.webview.asWebviewUri(onDiskPath);
+      return match.replace(/src="[^"]*"/, `src="${newSrc}"`);
+    });
 
     // nullcheck to make typescript happy
     if (this.panel) {
