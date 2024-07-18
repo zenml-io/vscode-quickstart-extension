@@ -95,13 +95,13 @@ class QuickstartSection {
 
 export default class Quickstart {
   public metadata: TutorialData;
-  public terminal: vscode.Terminal | undefined;
   public editor: vscode.TextEditor | undefined;
   public panel: vscode.WebviewPanel | undefined;
   public sections: QuickstartSection[];
   public context: vscode.ExtensionContext;
   public currentSectionIndex = 0;
   public currentSection: QuickstartSection;
+  private _terminal: vscode.Terminal | undefined;
 
   constructor(metadata: TutorialData, context: vscode.ExtensionContext) {
     this.metadata = metadata;
@@ -110,6 +110,18 @@ export default class Quickstart {
     });
     this.context = context;
     this.currentSection = this.sections[0];
+  }
+
+  public set terminal(value: vscode.Terminal | undefined) {
+    this._terminal = value;
+  }
+
+  public get terminal(): vscode.Terminal {
+    if (this._terminal === undefined) {
+      this._terminal = vscode.window.createTerminal("ZenML Terminal");
+    }
+
+    return this._terminal;
   }
 
   async openSection(sectionId: number) {
@@ -133,6 +145,11 @@ export default class Quickstart {
     this.openSection(this.currentSectionIndex);
   }
 
+  sendTerminalCommand(command: string) {
+    this.terminal.show();
+    this.terminal.sendText(command);
+  }
+
   async runCode(callback?: Function) {
     try {
       if (!this.editor) {
@@ -148,10 +165,6 @@ export default class Quickstart {
           preserveFocus: false,
           viewColumn: vscode.ViewColumn.One,
         });
-      }
-
-      if (!this.terminal) {
-        this.terminal = vscode.window.createTerminal("ZenML Terminal");
       }
 
       const filePath: string = this.editor.document.uri.fsPath;
@@ -175,9 +188,6 @@ export default class Quickstart {
     successFilePath: string,
     errorFilePath: string
   ) {
-    if (!this.terminal) {
-      this.terminal = vscode.window.createTerminal("ZenML Terminal");
-    }
 
     const scriptPath = path.join(os.tmpdir(), "runCode.sh");
 
@@ -195,7 +205,7 @@ export default class Quickstart {
     `
     );
 
-    this.terminal.sendText(`bash ${scriptPath}`);
+    this.sendTerminalCommand(`bash ${scriptPath}`);
   }
 
   // HELPERS

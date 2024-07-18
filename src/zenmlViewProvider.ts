@@ -53,7 +53,7 @@ export default class ZenmlViewProvider implements vscode.WebviewViewProvider {
           break;
         }
         case "serverConnect": {
-          this._quickstart.terminal?.sendText(
+          this._quickstart.sendTerminalCommand(
             `zenml connect --url "${data.url}"`
           );
         }
