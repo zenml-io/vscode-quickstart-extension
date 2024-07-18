@@ -1,4 +1,4 @@
-## 🥇 Step 2: Load your data and execute feature engineering
+# 🥇 Step 2: Load your data and execute feature engineering
 
 We'll start off by importing our data. In this quickstart we'll be working with
 [the Breast Cancer](https://archive.ics.uci.edu/dataset/17/breast+cancer+wisconsin+diagnostic) dataset
@@ -10,7 +10,7 @@ something similar to this: import your data and get it in the right shape for
 your training. ZenML mostly gets out of your way when you're writing your Python
 code, as you'll see from when you run this code.
 
-<img src=".assets/feature_engineering_pipeline.png" width="50%" alt="Feature engineering pipeline" />
+<img src="/zenmlQuickstart/assets/feature_engineering_pipeline.png" width="50%" alt="Feature engineering pipeline" />
 
 The whole function is decorated with the `@step` decorator, which
 tells ZenML to track this function as a step in the pipeline. This means that

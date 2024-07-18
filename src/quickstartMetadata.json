@@ -42,6 +42,91 @@
           "code": "zenmlQuickstart/sections/loadingData/loadingData.py"
         }
       ]
+    },
+    {
+      "title": "Feature Engineering",
+      "description": "",
+      "steps": [
+        {
+          "doc": "zenmlQuickstart/sections/featureEngineering/featureEngineering1.md",
+          "code": "zenmlQuickstart/sections/featureEngineering/featureEngineering1.py"
+        },
+        {
+          "doc": "zenmlQuickstart/sections/featureEngineering/afterRunning1.md",
+          "code": "zenmlQuickstart/sections/featureEngineering/featureEngineering1.py"
+        }
+      ]
+    },
+    {
+      "title": "Feature Engineering with Cache",
+      "description": "",
+      "steps": [
+        {
+          "doc": "zenmlQuickstart/sections/featureEngineering2/featureEngineering2.md",
+          "code": "zenmlQuickstart/sections/featureEngineering2/featureEngineering2.py"
+        },
+        {
+          "doc": "zenmlQuickstart/sections/featureEngineering2/afterRunning2.md",
+          "code": "zenmlQuickstart/sections/featureEngineering2/featureEngineering2.py"
+        }
+      ]
+    },
+    {
+      "title": "Training Pipeline",
+      "description": "In this section, we're going to train a model twice using SGD and random forest, and get the accuracy of the run",
+      "steps": [
+        {
+          "doc": "zenmlQuickstart/sections/trainingPipeline/trainingPipeline1.md",
+          "code": "zenmlQuickstart/sections/trainingPipeline/trainingPipeline1.py"
+        },
+        {
+          "doc": "zenmlQuickstart/sections/trainingPipeline/finish.md",
+          "code": "zenmlQuickstart/sections/trainingPipeline/trainingPipeline1.py"
+        }
+      ]
+    },
+    {
+      "title": "Use the Model Control Plane",
+      "description": "Now that we've produced a few models, we're going to learn how to manage them.",
+      "steps": [
+        {
+          "doc": "zenmlQuickstart/sections/modelControlPlane/modelControlPlane.md",
+          "code": "zenmlQuickstart/sections/modelControlPlane/modelControlPlane.py"
+        },
+        {
+          "doc": "zenmlQuickstart/sections/modelControlPlane/modelControlPlane2.md",
+          "code": "zenmlQuickstart/sections/modelControlPlane/modelControlPlane.py"
+        },
+        {
+          "doc": "zenmlQuickstart/sections/modelControlPlane/finish.md",
+          "code": "zenmlQuickstart/sections/modelControlPlane/modelControlPlane.py"
+        }
+      ]
+    },
+    {
+      "title": "Consuming the Model in Production",
+      "description": "Now that we've produced a few models, we're going to learn how to manage them.",
+      "steps": [
+        {
+          "doc": "zenmlQuickstart/sections/consumingModel/consumingModel.md",
+          "code": "zenmlQuickstart/sections/consumingModel/consumingModel.py"
+        },
+
+        {
+          "doc": "zenmlQuickstart/sections/consumingModel/finish.md",
+          "code": "zenmlQuickstart/sections/consumingModel/consumingModel.py"
+        }
+      ]
+    },
+    {
+      "title": "Next Steps",
+      "description": "Now that we've produced a few models, we're going to learn how to manage them.",
+      "steps": [
+        {
+          "doc": "zenmlQuickstart/sections/nextSteps/congratulations.md",
+          "code": "zenmlQuickstart/sections/consumingModel/consumingModel.py"
+        }
+      ]
     }
   ]
 }

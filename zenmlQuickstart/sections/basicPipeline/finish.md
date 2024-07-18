@@ -1,4 +1,4 @@
-## ☁️ Step 1: Connect to ZenML Cloud
+# 🏔️ Step 1: Connect to ZenML Cloud
 
 Nice! You just ran your first ZenML pipeline.
 

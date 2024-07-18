@@ -21,6 +21,11 @@
       handleOpenSection(id);
     });
 
+  document.querySelector(".next-step")?.addEventListener("click", (element) => {
+    //@ts-ignore for dataset
+    handleNextStep();
+  });
+
   document
     .querySelector(".reset-section")
     ?.addEventListener("click", (element) => {
@@ -57,6 +62,10 @@
 
   function handleReset() {
     vscode.postMessage({ type: "resetSection" });
+  }
+
+  function handleNextStep() {
+    vscode.postMessage({ type: "nextStep" });
   }
 })();
 

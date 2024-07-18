@@ -60,6 +60,12 @@ export default class ZenmlViewProvider implements vscode.WebviewViewProvider {
           );
           break;
         }
+        case "nextStep": {
+          this._quickstart.currentSection.nextStep();
+          this._quickstart.openSection(this._quickstart.currentSectionIndex);
+          refreshWebview();
+          break;
+        }
       }
     });
   }
@@ -114,6 +120,9 @@ export default class ZenmlViewProvider implements vscode.WebviewViewProvider {
   ${this._quickstart.currentSection.html()}
   <button class="run-code">Execute Current Code</button>
   <button class="reset-section">Reset Section</button>
+  <button class="next-step ${
+    this._quickstart.currentSection.isDone() ? "hide" : ""
+  }" >Next Step</button>
   <button class="next-section ${
     this._quickstart.currentSection.isDone() ? "" : "hide"
   }" data-id="${
