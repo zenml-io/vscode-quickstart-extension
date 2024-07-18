@@ -13,17 +13,33 @@
     });
   });
 
-  document.querySelector(".next-section")?.addEventListener("click", (element) => {
-    //@ts-ignore for dataset
-    const id = parseInt(element.target?.dataset.id, 10);
+  document
+    .querySelector(".next-section")
+    ?.addEventListener("click", (element) => {
+      //@ts-ignore for dataset
+      const id = parseInt(element.target?.dataset.id, 10);
       handleOpenSection(id);
-  })
+    });
 
-  document.querySelector(".reset-section")?.addEventListener("click", (element) => {
-    //@ts-ignore for dataset
-    const id = parseInt(element.target?.dataset.id, 10);
+  document
+    .querySelector(".reset-section")
+    ?.addEventListener("click", (element) => {
+      //@ts-ignore for dataset
+      const id = parseInt(element.target?.dataset.id, 10);
       handleReset();
-  })
+    });
+
+  document
+    .getElementById("zenml-server-connect")
+    ?.addEventListener("click", () => {
+      handleServerConnect();
+    });
+
+  function handleServerConnect() {
+    //@ts-ignore
+    const url = document.getElementById("zenml-server-connect-input").value;
+    vscode.postMessage({ type: "serverConnect", url });
+  }
 
   document.querySelectorAll(".run-code").forEach((element) => {
     element.addEventListener("click", () => {
@@ -40,9 +56,8 @@
   }
 
   function handleReset() {
-    vscode.postMessage({type: "resetSection"});
+    vscode.postMessage({ type: "resetSection" });
   }
-
 })();
 
 (function () {

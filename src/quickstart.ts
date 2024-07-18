@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import path from "path";
 import generateHTMLfromMD from "./utils/generateHTMLfromMD";
 import getNonce from "./utils/getNonce";
-import { writeFileSync } from "fs";
+import { writeFileSync, readFileSync } from "fs";
 import os from "os";
 
 interface TutorialData {
@@ -13,6 +13,7 @@ interface SectionStep {
   doc: string;
   docHTML?: string;
   code: string;
+  html?: string;
 }
 
 interface Section {
@@ -29,7 +30,7 @@ class QuickstartSection {
   private _steps: SectionStep[];
   private _done = false;
 
-  constructor(section: Section, context: vscode.ExtensionContext ) {
+  constructor(section: Section, context: vscode.ExtensionContext) {
     this.context = context;
     this.title = section.title;
     this.description = section.description;
@@ -62,6 +63,19 @@ class QuickstartSection {
     return this._steps[this.currentStep].code;
   }
 
+  html() {
+    const file = this._steps[this.currentStep].html;
+
+    if (file) {
+      const htmlPath = path.join(this.context.extensionPath, file);
+      const htmlContent = readFileSync(htmlPath, { encoding: "utf-8" });
+
+      return htmlContent;
+    } else {
+      return "";
+    }
+  }
+
   reset() {
     this.currentStep = 0;
     this._done = false;
@@ -73,7 +87,7 @@ class QuickstartSection {
 
   private _convertStepMarkdown() {
     this._steps.forEach((step) => {
-    const tutorialPath = path.join(this.context.extensionPath, step.doc);
+      const tutorialPath = path.join(this.context.extensionPath, step.doc);
       step.docHTML = generateHTMLfromMD(tutorialPath);
     });
   }
@@ -81,13 +95,13 @@ class QuickstartSection {
 
 export default class Quickstart {
   public metadata: TutorialData;
-  public terminal: vscode.Terminal | undefined;
   public editor: vscode.TextEditor | undefined;
   public panel: vscode.WebviewPanel | undefined;
   public sections: QuickstartSection[];
   public context: vscode.ExtensionContext;
   public currentSectionIndex = 0;
   public currentSection: QuickstartSection;
+  private _terminal: vscode.Terminal | undefined;
 
   constructor(metadata: TutorialData, context: vscode.ExtensionContext) {
     this.metadata = metadata;
@@ -96,6 +110,22 @@ export default class Quickstart {
     });
     this.context = context;
     this.currentSection = this.sections[0];
+  }
+
+  public set terminal(value: vscode.Terminal | undefined) {
+    this._terminal = value;
+  }
+
+  public closeTerminal() {
+    this._terminal?.hide();
+  }
+
+  public get terminal(): vscode.Terminal {
+    if (this._terminal === undefined) {
+      this._terminal = vscode.window.createTerminal("ZenML Terminal");
+    }
+
+    return this._terminal;
   }
 
   async openSection(sectionId: number) {
@@ -119,6 +149,11 @@ export default class Quickstart {
     this.openSection(this.currentSectionIndex);
   }
 
+  sendTerminalCommand(command: string) {
+    this.terminal.show(true);
+    this.terminal.sendText(command);
+  }
+
   async runCode(callback?: Function) {
     try {
       if (!this.editor) {
@@ -136,10 +171,6 @@ export default class Quickstart {
         });
       }
 
-      if (!this.terminal) {
-        this.terminal = vscode.window.createTerminal("ZenML Terminal");
-      }
-
       const filePath: string = this.editor.document.uri.fsPath;
 
       // watcher to automatically run next step when current file runs
@@ -149,7 +180,7 @@ export default class Quickstart {
       );
       this._runCode(filePath, successFilePath, errorFilePath);
 
-      this.terminal.show();
+      this.terminal.show(true);
     } catch (error) {
       vscode.window.showErrorMessage(`Failed to execute file: ${error}`);
     }
@@ -161,10 +192,6 @@ export default class Quickstart {
     successFilePath: string,
     errorFilePath: string
   ) {
-    if (!this.terminal) {
-      this.terminal = vscode.window.createTerminal("ZenML Terminal");
-    }
-
     const scriptPath = path.join(os.tmpdir(), "runCode.sh");
 
     writeFileSync(
@@ -181,7 +208,7 @@ export default class Quickstart {
     `
     );
 
-    this.terminal.sendText(`bash ${scriptPath}`);
+    this.sendTerminalCommand(`bash ${scriptPath}`);
   }
 
   // HELPERS

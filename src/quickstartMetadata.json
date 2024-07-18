@@ -20,7 +20,8 @@
       "steps": [
         {
           "doc": "zenmlQuickstart/sections/basicPipeline/connectToZenmlCloud.md",
-          "code": "zenmlQuickstart/sections/basicPipeline/code2.py"
+          "code": "zenmlQuickstart/sections/basicPipeline/code2.py",
+          "html": "zenmlQuickstart/sections/basicPipeline/connectToZenmlCloud.html"
         },
         {
           "doc": "zenmlQuickstart/sections/basicPipeline/finish.md",
