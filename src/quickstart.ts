@@ -195,7 +195,6 @@ export default class Quickstart {
     // check if doc content has images
     // if so, replace the image source with vscode URI
     docContent = docContent.replace(/<img\s+[^>]*src="([^"]*)"[^>]*>/g, (match, originalSrc) => {
-      // Example transformation: Append '-placeholder' to the original filename before the extension
       const onDiskPath = vscode.Uri.joinPath(this.context.extensionUri, originalSrc);
       const newSrc = this.panel?.webview.asWebviewUri(onDiskPath);
       return match.replace(/src="[^"]*"/, `src="${newSrc}"`);
