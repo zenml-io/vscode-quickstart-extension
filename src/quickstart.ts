@@ -280,6 +280,7 @@ export default class Quickstart {
       {}
     );
 
+    this._registerView();
     this._panel.onDidDispose(() => {
       this._panel = undefined;
     });
@@ -327,13 +328,11 @@ export default class Quickstart {
     return { successFilePath, errorFilePath };
   }
 
-  private _generateHTML(docContent: string) {
+  private _registerView() {
     this.panel.webview.options = {
       enableScripts: true,
       localResourceRoots: [this.context.extensionUri],
     };
-
-    const webview = this.panel.webview;
 
     this.panel.webview.onDidReceiveMessage(async (data) => {
       switch (data.type) {
@@ -343,6 +342,7 @@ export default class Quickstart {
           break;
         }
         case "runCodeFile": {
+          console.log('Code File')
           await this.runCode();
           break;
         }
@@ -363,6 +363,9 @@ export default class Quickstart {
         }
       }
     });
+  }
+  private _generateHTML(docContent: string) {
+    const webview = this.panel.webview;
 
     // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
     const scriptUri = webview.asWebviewUri(
