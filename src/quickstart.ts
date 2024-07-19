@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import path from "path";
 import generateHTMLfromMD from "./utils/generateHTMLfromMD";
 import getNonce from "./utils/getNonce";
-import { writeFileSync, readFileSync } from "fs";
+import { writeFileSync, readFileSync, read } from "fs";
 import os from "os";
 
 interface TutorialData {
@@ -38,7 +38,6 @@ class QuickstartSection {
     this._convertStepMarkdown();
     this.currentStep = 0;
     return this;
-
   }
 
   nextStep() {
@@ -127,6 +126,37 @@ export default class Quickstart {
     }
 
     return this._terminal;
+  }
+
+  public resetCode() {
+    if (!this.editor) {
+      return;
+    }
+    //get the current open section
+    const openCode = this.currentSection.code();
+    //replace the path to point to the backup
+    const backupPath =
+      this.context.extensionPath +
+      "/" +
+      openCode.replace("sections", "sectionsBackup");
+    console.log(backupPath);
+
+    //get the text from the backup
+    const originalCode = readFileSync(backupPath, { encoding: "utf-8" });
+
+    // A range that covers the entire document
+    const documentRange = new vscode.Range(
+      0,
+      0,
+      this.editor.document.lineCount,
+      Infinity
+    );
+
+    this.editor.edit((editBuilder) => {
+      editBuilder.replace(documentRange, originalCode);
+    });
+
+    this.editor.document.save();
   }
 
   async openSection(sectionId: number) {
@@ -221,11 +251,17 @@ export default class Quickstart {
 
     // check if doc content has images
     // if so, replace the image source with vscode URI
-    docContent = docContent.replace(/<img\s+[^>]*src="([^"]*)"[^>]*>/g, (match, originalSrc) => {
-      const onDiskPath = vscode.Uri.joinPath(this.context.extensionUri, originalSrc);
-      const newSrc = this.panel?.webview.asWebviewUri(onDiskPath);
-      return match.replace(/src="[^"]*"/, `src="${newSrc}"`);
-    });
+    docContent = docContent.replace(
+      /<img\s+[^>]*src="([^"]*)"[^>]*>/g,
+      (match, originalSrc) => {
+        const onDiskPath = vscode.Uri.joinPath(
+          this.context.extensionUri,
+          originalSrc
+        );
+        const newSrc = this.panel?.webview.asWebviewUri(onDiskPath);
+        return match.replace(/src="[^"]*"/, `src="${newSrc}"`);
+      }
+    );
 
     // nullcheck to make typescript happy
     if (this.panel) {

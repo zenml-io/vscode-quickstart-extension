@@ -66,6 +66,10 @@ export default class ZenmlViewProvider implements vscode.WebviewViewProvider {
           refreshWebview();
           break;
         }
+        case "resetCodeFile": {
+          this._quickstart.resetCode();
+          break;
+        }
       }
     });
   }
@@ -119,6 +123,7 @@ export default class ZenmlViewProvider implements vscode.WebviewViewProvider {
   <p>${this._quickstart.currentSection.description}</p>
   ${this._quickstart.currentSection.html()}
   <button class="run-code">Execute Current Code</button>
+  <button class="reset-code">Reset Code </button>
   <button class="reset-section">Reset Section</button>
   <button class="next-step ${
     this._quickstart.currentSection.isDone() ? "hide" : ""

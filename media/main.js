@@ -35,6 +35,12 @@
     });
 
   document
+    .querySelector(".reset-code")
+    ?.addEventListener("click", (element) => {
+      handleResetCode();
+    });
+
+  document
     .getElementById("zenml-server-connect")
     ?.addEventListener("click", () => {
       handleServerConnect();
@@ -54,6 +60,10 @@
 
   function handleRunCode() {
     vscode.postMessage({ type: "runCodeFile" });
+  }
+
+  function handleResetCode() {
+    vscode.postMessage({ type: "resetCodeFile" });
   }
 
   function handleOpenSection(id) {
