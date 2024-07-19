@@ -9,12 +9,13 @@ import createSectionBackup from "./utils/createSectionBackup";
 import getExtensionUri from "./utils/getExtensionUri";
 
 export async function activate(context: vscode.ExtensionContext) {
+  const extensionUri = getExtensionUri(context);
   // Only set the directory if running in devcontainer
   if (vscode.env.remoteName) {
-    setDirectory(getExtensionUri(context));
+    setDirectory(extensionUri);
   }
 
-  // createSectionBackup();
+  createSectionBackup(extensionUri);
 
   const quickstart = new Quickstart(quickstartMetadata, context);
   const provider = new ZenmlViewProvider(context.extensionUri, quickstart);
