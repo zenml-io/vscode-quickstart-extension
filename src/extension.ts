@@ -3,7 +3,7 @@
 import * as vscode from "vscode";
 import quickstartMetadata from "./quickstartMetadata.json";
 import Quickstart from "./quickstart";
-import ZenmlViewProvider from "./zenmlViewProvider";
+// import ZenmlViewProvider from "./zenmlViewProvider";
 import setDirectory from "./utils/setExtensionDirectory";
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -13,18 +13,18 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   const quickstart = new Quickstart(quickstartMetadata, context);
-  const provider = new ZenmlViewProvider(context.extensionUri, quickstart);
+  // const provider = new ZenmlViewProvider(context.extensionUri, quickstart);
 
-  // Register webview
-  context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider(
-      ZenmlViewProvider.viewId,
-      provider
-    )
-  );
+  // // Register webview
+  // context.subscriptions.push(
+  //   vscode.window.registerWebviewViewProvider(
+  //     ZenmlViewProvider.viewId,
+  //     provider
+  //   )
+  // );
 
   // Focuses the webview side panel
-  await vscode.commands.executeCommand("zenml.stepsView.focus");
+  // await vscode.commands.executeCommand("zenml.stepsView.focus");
 
   // If a user closes the terminal the extension opened we set it
   // back to undefined so we know to open a new terminal
