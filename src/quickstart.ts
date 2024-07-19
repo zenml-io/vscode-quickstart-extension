@@ -23,14 +23,12 @@ export default class Quickstart {
     });
     this.context = context;
     this.currentSection = this.sections[0];
+    this.openSection(0);
   }
 
+  // setters & getters
   public set terminal(value: vscode.Terminal | undefined) {
     this._terminal = value;
-  }
-
-  public closeTerminal() {
-    this._terminal?.hide();
   }
 
   public get terminal(): vscode.Terminal {
@@ -49,6 +47,7 @@ export default class Quickstart {
     return this._panel as vscode.WebviewPanel;
   }
 
+  // Doc Panel
   async openSection(sectionId: number) {
     this._setSection(sectionId);
 
@@ -66,8 +65,12 @@ export default class Quickstart {
 
   openNextStep() {
     this.currentSection.nextStep();
-
     this.openSection(this.currentSectionIndex);
+  }
+
+  // Terminal
+  public closeTerminal() {
+    this._terminal?.hide();
   }
 
   sendTerminalCommand(command: string) {
@@ -279,6 +282,7 @@ export default class Quickstart {
       }
     });
   }
+
   private _generateHTML(docContent: string) {
     const webview = this.panel.webview;
 
