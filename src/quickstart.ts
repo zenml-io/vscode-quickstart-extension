@@ -120,7 +120,7 @@ export default class Quickstart {
 
       if (!activeEditorIsCurrentEditor) {
         await vscode.window.showTextDocument(this.editor.document, {
-          preview: false,
+          preview: true,
           preserveFocus: false,
           viewColumn: vscode.ViewColumn.Two,
         });
