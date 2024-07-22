@@ -1,97 +1,10 @@
 import * as vscode from "vscode";
 import path from "path";
-import generateHTMLfromMD from "./utils/generateHTMLfromMD";
 import getNonce from "./utils/getNonce";
 import { writeFileSync, readFileSync, read } from "fs";
 import os from "os";
-
-interface TutorialData {
-  sections: Section[];
-}
-
-interface SectionStep {
-  doc: string;
-  docHTML?: string;
-  code: string;
-  html?: string;
-}
-
-interface Section {
-  title: string;
-  description: string;
-  steps: SectionStep[];
-}
-
-class QuickstartSection {
-  public title: string;
-  public context: vscode.ExtensionContext;
-  public description: string;
-  public currentStep: number;
-  private _steps: SectionStep[];
-  private _done = false;
-
-  constructor(section: Section, context: vscode.ExtensionContext) {
-    this.context = context;
-    this.title = section.title;
-    this.description = section.description;
-    this._steps = section.steps;
-    this._convertStepMarkdown();
-    this.currentStep = 0;
-    return this;
-  }
-
-  nextStep() {
-    if (this.currentStep + 1 < this._steps.length) {
-      this.currentStep++;
-    }
-    if (this.currentStep >= this._steps.length - 1) {
-      this._done = true;
-    }
-  }
-
-  doc() {
-    return this._steps[this.currentStep].doc;
-  }
-
-  docHTML() {
-    const html = this._steps[this.currentStep].docHTML;
-
-    return html ? html : "";
-  }
-
-  code() {
-    return this._steps[this.currentStep].code;
-  }
-
-  html() {
-    const file = this._steps[this.currentStep].html;
-
-    if (file) {
-      const htmlPath = path.join(this.context.extensionPath, file);
-      const htmlContent = readFileSync(htmlPath, { encoding: "utf-8" });
-
-      return htmlContent;
-    } else {
-      return "";
-    }
-  }
-
-  reset() {
-    this.currentStep = 0;
-    this._done = false;
-  }
-
-  isDone() {
-    return this._done;
-  }
-
-  private _convertStepMarkdown() {
-    this._steps.forEach((step) => {
-      const tutorialPath = path.join(this.context.extensionPath, step.doc);
-      step.docHTML = generateHTMLfromMD(tutorialPath);
-    });
-  }
-}
+import QuickstartSection from "./quickstartSection";
+import { TutorialData } from "./quickstartSection";
 
 export default class Quickstart {
   public metadata: TutorialData;
@@ -110,14 +23,12 @@ export default class Quickstart {
     });
     this.context = context;
     this.currentSection = this.sections[0];
+    this.openSection(0);
   }
 
+  // setters & getters
   public set terminal(value: vscode.Terminal | undefined) {
     this._terminal = value;
-  }
-
-  public closeTerminal() {
-    this._terminal?.hide();
   }
 
   public get terminal(): vscode.Terminal {
@@ -167,6 +78,7 @@ export default class Quickstart {
     this.editor.document.save();
   }
 
+  // Doc Panel
   async openSection(sectionId: number) {
     this._setSection(sectionId);
 
@@ -184,8 +96,12 @@ export default class Quickstart {
 
   openNextStep() {
     this.currentSection.nextStep();
-
     this.openSection(this.currentSectionIndex);
+  }
+
+  // Terminal
+  public closeTerminal() {
+    this._terminal?.hide();
   }
 
   sendTerminalCommand(command: string) {
@@ -311,6 +227,7 @@ export default class Quickstart {
       {}
     );
 
+    this._registerView();
     this._panel.onDidDispose(() => {
       this._panel = undefined;
     });
@@ -344,7 +261,9 @@ export default class Quickstart {
       if (uri.fsPath.endsWith(successFileName)) {
         vscode.window.showInformationMessage("Code Ran Successfully! 🎉");
         this.openNextStep();
-        if (onSuccessCallback) onSuccessCallback();
+        if (onSuccessCallback) {
+          onSuccessCallback();
+        }
       } else if (uri.fsPath.endsWith(errorFileName)) {
         vscode.window.showErrorMessage("Code Run Encountered an Error. ❌");
       }
@@ -358,13 +277,11 @@ export default class Quickstart {
     return { successFilePath, errorFilePath };
   }
 
-  private _generateHTML(docContent: string) {
+  private _registerView() {
     this.panel.webview.options = {
       enableScripts: true,
       localResourceRoots: [this.context.extensionUri],
     };
-
-    const webview = this.panel.webview;
 
     this.panel.webview.onDidReceiveMessage(async (data) => {
       switch (data.type) {
@@ -374,6 +291,7 @@ export default class Quickstart {
           break;
         }
         case "runCodeFile": {
+          console.log("Code File");
           await this.runCode();
           break;
         }
@@ -398,6 +316,10 @@ export default class Quickstart {
         }
       }
     });
+  }
+
+  private _generateHTML(docContent: string) {
+    const webview = this.panel.webview;
 
     // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
     const scriptUri = webview.asWebviewUri(
