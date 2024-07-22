@@ -9,7 +9,7 @@ We'll start with two simple models, a SGD Classifier and a Random Forest
 Classifier, both batteries-included from `sklearn`. We'll train them both on the
 same data and then compare their performance.
 
-<img src="/zenmlQuickstart/assets/training_pipeline.png" width="50%" alt="Training pipeline">
+<img src="/zenmlQuickstart/assets/training_pipeline.png" width="75%" alt="Training pipeline">
 
 Our two training steps both return different kinds of `sklearn` classifier
 models, so we use the generic `ClassifierMixin` type hint for the return type.
