@@ -4,12 +4,17 @@ import * as vscode from "vscode";
 import quickstartMetadata from "./quickstartMetadata.json";
 import Quickstart from "./quickstart";
 import setDirectory from "./utils/setExtensionDirectory";
+import createSectionBackup from "./utils/createSectionBackup";
+import getExtensionUri from "./utils/getExtensionUri";
 
 export async function activate(context: vscode.ExtensionContext) {
-  // if running in production set working directory for local devcontainer or codespace
-  if (context.extensionMode === vscode.ExtensionMode.Production) {
-    setDirectory();
+  const extensionUri = getExtensionUri(context);
+  // Only set the directory if running in devcontainer
+  if (vscode.env.remoteName) {
+    setDirectory(extensionUri);
   }
+
+  createSectionBackup(extensionUri);
 
   const quickstart = new Quickstart(quickstartMetadata, context);
 

@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import path from "path";
 import getNonce from "./utils/getNonce";
-import { writeFileSync } from "fs";
+import { writeFileSync, readFileSync, read } from "fs";
 import os from "os";
 import QuickstartSection from "./quickstartSection";
 import { TutorialData } from "./quickstartSection";
@@ -45,6 +45,37 @@ export default class Quickstart {
     }
 
     return this._panel as vscode.WebviewPanel;
+  }
+
+  public resetCode() {
+    if (!this.editor) {
+      return;
+    }
+    //get the current open section
+    const openCode = this.currentSection.code();
+    //replace the path to point to the backup
+    const backupPath =
+      this.context.extensionPath +
+      "/" +
+      openCode.replace("sections", "sectionsBackup");
+    console.log(backupPath);
+
+    //get the text from the backup
+    const originalCode = readFileSync(backupPath, { encoding: "utf-8" });
+
+    // A range that covers the entire document
+    const documentRange = new vscode.Range(
+      0,
+      0,
+      this.editor.document.lineCount,
+      Infinity
+    );
+
+    this.editor.edit((editBuilder) => {
+      editBuilder.replace(documentRange, originalCode);
+    });
+
+    this.editor.document.save();
   }
 
   // Doc Panel
@@ -277,6 +308,10 @@ export default class Quickstart {
         case "nextStep": {
           this.currentSection.nextStep();
           this.openSection(this.currentSectionIndex);
+          break;
+        }
+        case "resetCodeFile": {
+          this.resetCode();
           break;
         }
       }
