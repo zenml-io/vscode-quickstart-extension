@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import path from "path";
 import generateHTMLfromMD from "./utils/generateHTMLfromMD";
 import getNonce from "./utils/getNonce";
-import { writeFileSync, readFileSync } from "fs";
+import { writeFileSync, readFileSync, read } from "fs";
 import os from "os";
 
 interface TutorialData {
@@ -38,7 +38,6 @@ class QuickstartSection {
     this._convertStepMarkdown();
     this.currentStep = 0;
     return this;
-
   }
 
   nextStep() {
@@ -97,7 +96,7 @@ class QuickstartSection {
 export default class Quickstart {
   public metadata: TutorialData;
   public editor: vscode.TextEditor | undefined;
-  public panel: vscode.WebviewPanel | undefined;
+  public _panel: vscode.WebviewPanel | undefined;
   public sections: QuickstartSection[];
   public context: vscode.ExtensionContext;
   public currentSectionIndex = 0;
@@ -127,6 +126,45 @@ export default class Quickstart {
     }
 
     return this._terminal;
+  }
+
+  public get panel(): vscode.WebviewPanel {
+    if (this._panel === undefined) {
+      this._initializePanel();
+    }
+
+    return this._panel as vscode.WebviewPanel;
+  }
+
+  public resetCode() {
+    if (!this.editor) {
+      return;
+    }
+    //get the current open section
+    const openCode = this.currentSection.code();
+    //replace the path to point to the backup
+    const backupPath =
+      this.context.extensionPath +
+      "/" +
+      openCode.replace("sections", "sectionsBackup");
+    console.log(backupPath);
+
+    //get the text from the backup
+    const originalCode = readFileSync(backupPath, { encoding: "utf-8" });
+
+    // A range that covers the entire document
+    const documentRange = new vscode.Range(
+      0,
+      0,
+      this.editor.document.lineCount,
+      Infinity
+    );
+
+    this.editor.edit((editBuilder) => {
+      editBuilder.replace(documentRange, originalCode);
+    });
+
+    this.editor.document.save();
   }
 
   async openSection(sectionId: number) {
@@ -168,7 +206,7 @@ export default class Quickstart {
         await vscode.window.showTextDocument(this.editor.document, {
           preview: false,
           preserveFocus: false,
-          viewColumn: vscode.ViewColumn.One,
+          viewColumn: vscode.ViewColumn.Two,
         });
       }
 
@@ -215,22 +253,28 @@ export default class Quickstart {
   // HELPERS
 
   openDocPanel(title: string, docContent: string) {
-    if (!this.panel) {
+    if (!this._panel) {
       this._initializePanel();
     }
 
     // check if doc content has images
     // if so, replace the image source with vscode URI
-    docContent = docContent.replace(/<img\s+[^>]*src="([^"]*)"[^>]*>/g, (match, originalSrc) => {
-      const onDiskPath = vscode.Uri.joinPath(this.context.extensionUri, originalSrc);
-      const newSrc = this.panel?.webview.asWebviewUri(onDiskPath);
-      return match.replace(/src="[^"]*"/, `src="${newSrc}"`);
-    });
+    docContent = docContent.replace(
+      /<img\s+[^>]*src="([^"]*)"[^>]*>/g,
+      (match, originalSrc) => {
+        const onDiskPath = vscode.Uri.joinPath(
+          this.context.extensionUri,
+          originalSrc
+        );
+        const newSrc = this._panel?.webview.asWebviewUri(onDiskPath);
+        return match.replace(/src="[^"]*"/, `src="${newSrc}"`);
+      }
+    );
 
     // nullcheck to make typescript happy
-    if (this.panel) {
-      this.panel.title = title;
-      this.panel.webview.html = docContent;
+    if (this._panel) {
+      this._panel.title = title;
+      this._panel.webview.html = this._generateHTML(docContent);
     }
   }
 
@@ -241,7 +285,7 @@ export default class Quickstart {
       const document = await vscode.workspace.openTextDocument(filePath);
       this.editor = await vscode.window.showTextDocument(
         document,
-        vscode.ViewColumn.One
+        vscode.ViewColumn.Two
       );
     } catch (error) {
       vscode.window.showErrorMessage(`Failed to open file: ${error}`);
@@ -260,15 +304,15 @@ export default class Quickstart {
   }
 
   private _initializePanel() {
-    this.panel = vscode.window.createWebviewPanel(
+    this._panel = vscode.window.createWebviewPanel(
       "zenml.markdown", // used internally - I think an identifier
       "Zenml", // displayed to user
-      vscode.ViewColumn.Two,
+      vscode.ViewColumn.One,
       {}
     );
 
-    this.panel.onDidDispose(() => {
-      this.panel = undefined;
+    this._panel.onDidDispose(() => {
+      this._panel = undefined;
     });
   }
 
@@ -312,5 +356,106 @@ export default class Quickstart {
 
     // Return paths for both success and error signal files for external use
     return { successFilePath, errorFilePath };
+  }
+
+  private _generateHTML(docContent: string) {
+    this.panel.webview.options = {
+      enableScripts: true,
+      localResourceRoots: [this.context.extensionUri],
+    };
+
+    const webview = this.panel.webview;
+
+    this.panel.webview.onDidReceiveMessage(async (data) => {
+      switch (data.type) {
+        case "openSection": {
+          this.openSection(data.id);
+          this.closeTerminal();
+          break;
+        }
+        case "runCodeFile": {
+          await this.runCode();
+          break;
+        }
+        case "resetSection": {
+          this.currentSection.reset();
+          this.openSection(this.currentSectionIndex);
+          this.closeTerminal();
+          break;
+        }
+        case "serverConnect": {
+          this.sendTerminalCommand(`zenml connect --url "${data.url}"`);
+          break;
+        }
+        case "nextStep": {
+          this.currentSection.nextStep();
+          this.openSection(this.currentSectionIndex);
+          break;
+        }
+        case "resetCodeFile": {
+          this.resetCode();
+          break;
+        }
+      }
+    });
+
+    // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
+    const scriptUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this.context.extensionUri, "media", "main.js")
+    );
+
+    const styleResetUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this.context.extensionUri, "media", "reset.css")
+    );
+    const styleVSCodeUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this.context.extensionUri, "media", "vscode.css")
+    );
+    const styleMainUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this.context.extensionUri, "media", "main.css")
+    );
+
+    // Use a nonce to only allow a specific script to be run.
+    const nonce = getNonce();
+
+    return /*html*/ `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+  
+    <!--
+      Use a content security policy to only allow loading styles from our extension directory,
+      and only allow scripts that have a specific nonce.
+      (See the 'webview-sample' extension sample for img-src content security policy examples)
+    -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${
+      webview.cspSource
+    }; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
+  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="${styleResetUri}" rel="stylesheet">
+    <link href="${styleVSCodeUri}" rel="stylesheet">
+    <link href="${styleMainUri}" rel="stylesheet">
+  
+    <title>Quickstart Guide</title>
+  </head>
+  
+  <body>
+    ${docContent}
+    ${this.currentSection.html()}
+    <button class="run-code">Execute Current Code</button>
+    <button class="reset-section">Reset Section</button>
+    <button class="next-step ${
+      this.currentSection.isDone() ? "hide" : ""
+    }" >Next Step</button>
+    <button class="next-section ${
+      this.currentSection.isDone() ? "" : "hide"
+    }" data-id="${this.currentSectionIndex + 1}">Go to next section</button>
+    <footer>  
+      <p>Section ${this.currentSectionIndex + 1} of ${this.sections.length}</p>
+    </footer>
+    <script nonce="${nonce}" src="${scriptUri}"></script>
+  </body>
+    </html>`;
   }
 }
