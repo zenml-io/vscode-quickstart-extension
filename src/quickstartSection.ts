@@ -14,7 +14,7 @@ interface SectionStep {
   html?: string;
 }
 
-export default interface Section {
+export interface Section {
   title: string;
   description: string;
   steps: SectionStep[];
