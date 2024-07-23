@@ -10,11 +10,11 @@ export interface TutorialData {
 interface SectionStep {
   doc: string;
   docHTML?: string;
-  code: string;
+  code?: string;
   html?: string;
 }
 
-export default interface Section {
+export interface Section {
   title: string;
   description: string;
   steps: SectionStep[];

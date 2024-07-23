@@ -123,8 +123,7 @@
       "description": "Now that we've produced a few models, we're going to learn how to manage them.",
       "steps": [
         {
-          "doc": "zenmlQuickstart/sections/nextSteps/congratulations.md",
-          "code": "zenmlQuickstart/sections/consumingModel/consumingModel.py"
+          "doc": "zenmlQuickstart/sections/nextSteps/congratulations.md"
         }
       ]
     }
