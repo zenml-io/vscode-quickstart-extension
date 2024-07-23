@@ -1,9 +1,10 @@
 import * as vscode from "vscode";
 import path from "path";
-import generateHTMLfromMD from "./utils/generateHTMLfromMD";
 import getNonce from "./utils/getNonce";
 import { writeFileSync, readFileSync, read } from "fs";
 import os from "os";
+import QuickstartSection from "./quickstartSection";
+import { TutorialData } from "./quickstartSection";
 
 interface TutorialData {
   sections: Section[];
@@ -110,14 +111,12 @@ export default class Quickstart {
     });
     this.context = context;
     this.currentSection = this.sections[0];
+    this.openSection(0);
   }
 
+  // setters & getters
   public set terminal(value: vscode.Terminal | undefined) {
     this._terminal = value;
-  }
-
-  public closeTerminal() {
-    this._terminal?.hide();
   }
 
   public get terminal(): vscode.Terminal {
@@ -167,6 +166,7 @@ export default class Quickstart {
     this.editor.document.save();
   }
 
+  // Doc Panel
   async openSection(sectionId: number) {
     this._setSection(sectionId);
     const openCode = this.currentSection.code();
@@ -202,8 +202,12 @@ export default class Quickstart {
 
   openNextStep() {
     this.currentSection.nextStep();
-
     this.openSection(this.currentSectionIndex);
+  }
+
+  // Terminal
+  public closeTerminal() {
+    this._terminal?.hide();
   }
 
   sendTerminalCommand(command: string) {
@@ -222,7 +226,7 @@ export default class Quickstart {
 
       if (!activeEditorIsCurrentEditor) {
         await vscode.window.showTextDocument(this.editor.document, {
-          preview: false,
+          preview: true,
           preserveFocus: false,
           viewColumn: vscode.ViewColumn.Two,
         });
@@ -329,6 +333,7 @@ export default class Quickstart {
       {}
     );
 
+    this._registerView();
     this._panel.onDidDispose(() => {
       this._panel = undefined;
     });
@@ -362,7 +367,9 @@ export default class Quickstart {
       if (uri.fsPath.endsWith(successFileName)) {
         vscode.window.showInformationMessage("Code Ran Successfully! 🎉");
         this.openNextStep();
-        if (onSuccessCallback) onSuccessCallback();
+        if (onSuccessCallback) {
+          onSuccessCallback();
+        }
       } else if (uri.fsPath.endsWith(errorFileName)) {
         vscode.window.showErrorMessage("Code Run Encountered an Error. ❌");
       }
@@ -376,13 +383,11 @@ export default class Quickstart {
     return { successFilePath, errorFilePath };
   }
 
-  private _generateHTML(docContent: string) {
+  private _registerView() {
     this.panel.webview.options = {
       enableScripts: true,
       localResourceRoots: [this.context.extensionUri],
     };
-
-    const webview = this.panel.webview;
 
     this.panel.webview.onDidReceiveMessage(async (data) => {
       switch (data.type) {
@@ -392,6 +397,7 @@ export default class Quickstart {
           break;
         }
         case "runCodeFile": {
+          console.log("Code File");
           await this.runCode();
           break;
         }
@@ -416,6 +422,10 @@ export default class Quickstart {
         }
       }
     });
+  }
+
+  private _generateHTML(docContent: string) {
+    const webview = this.panel.webview;
 
     // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
     const scriptUri = webview.asWebviewUri(
