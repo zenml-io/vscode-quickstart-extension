@@ -1,10 +1,11 @@
 import * as vscode from "vscode";
 import path from "path";
 import getNonce from "./utils/getNonce";
-import { writeFileSync, readFileSync, read } from "fs";
+import { writeFileSync, readFileSync } from "fs";
 import os from "os";
 import QuickstartSection from "./quickstartSection";
 import { TutorialData } from "./quickstartSection";
+import fileHasBackup from "./utils/fileHasBackup";
 
 export default class Quickstart {
   public metadata: TutorialData;
@@ -22,6 +23,8 @@ export default class Quickstart {
     this.sections = this.metadata.sections.map((section) => {
       return new QuickstartSection(section, context);
     });
+    this._codeModifiedListener();
+    this._activeTextEditorListener();
     this.context = context;
     this.currentSection = this.sections[0];
     this.openSection(0);
@@ -49,17 +52,24 @@ export default class Quickstart {
   }
 
   public resetCode() {
-    const openCode = this.currentSection.code();
-    if (!this.editor || !openCode) {
+    // const openCode = this.currentSection.code();
+    if (!vscode.window.activeTextEditor) {
       return;
     }
+
+    const activeEditor = vscode.window.activeTextEditor;
+    const openCode = activeEditor.document.uri.fsPath;
+
+    if (!fileHasBackup(openCode)) {
+      return;
+    }
+
+    // focus the document after clicking the button
+    vscode.window.showTextDocument(activeEditor.document);
+
     //get the current open section
     //replace the path to point to the backup
-    const backupPath =
-      this.context.extensionPath +
-      "/" +
-      openCode.replace("sections", "sectionsBackup");
-    console.log(backupPath);
+    const backupPath = openCode.replace("sections", "sectionsBackup");
 
     //get the text from the backup
     const originalCode = readFileSync(backupPath, { encoding: "utf-8" });
@@ -68,16 +78,49 @@ export default class Quickstart {
     const documentRange = new vscode.Range(
       0,
       0,
-      this.editor.document.lineCount,
+      activeEditor.document.lineCount,
       Infinity
     );
 
-    this.editor.edit((editBuilder) => {
+    activeEditor.edit((editBuilder) => {
       editBuilder.replace(documentRange, originalCode);
     });
 
-    this.editor.document.save();
+    this.codeIsModified = false;
+    activeEditor.document.save();
   }
+  // public resetCode() {
+  //   const openCode = this.currentSection.code();
+  //   if (!this.editor || !openCode) {
+  //     return;
+  //   }
+
+  //   vscode.window.activeTextEditor
+  //   //get the current open section
+  //   //replace the path to point to the backup
+  //   const backupPath =
+  //     this.context.extensionPath +
+  //     "/" +
+  //     openCode.replace("sections", "sectionsBackup");
+
+  //   //get the text from the backup
+  //   const originalCode = readFileSync(backupPath, { encoding: "utf-8" });
+
+  //   // A range that covers the entire document
+  //   const documentRange = new vscode.Range(
+  //     0,
+  //     0,
+  //     this.editor.document.lineCount,
+  //     Infinity
+  //   );
+
+  //   this.editor.edit((editBuilder) => {
+  //     editBuilder.replace(documentRange, originalCode);
+  //   });
+
+  //   this.codeIsModified = false;
+  //   this.editor.document.save();
+  // }
 
   closeCurrentEditor() {
     const currentEditor = this.editor?.document;
@@ -122,7 +165,9 @@ export default class Quickstart {
       ],
     });
 
-    this.codeIsModified = !this._codeEqualsBackup(openCode);
+    this.codeIsModified = !this._codeEqualsBackup(
+      path.join(this.context.extensionPath, openCode)
+    );
     this.openCodePanel(openCode);
     this.openDocPanel(this.currentSection.title, this.currentSection.docHTML());
   }
@@ -351,8 +396,32 @@ export default class Quickstart {
     });
   }
 
+  private _activeTextEditorListener() {
+    vscode.window.onDidChangeActiveTextEditor((event) => {
+      if (event) {
+        const filePath = event.document.uri.fsPath;
+        if (fileHasBackup(filePath)) {
+          this.codeIsModified = !this._codeEqualsBackup(filePath);
+        } else {
+          this.codeIsModified = false;
+        }
+      }
+    });
+  }
+
+  private _codeModifiedListener() {
+    vscode.workspace.onDidChangeTextDocument((event) => {
+      const filePath = event.document.uri.fsPath;
+      this.codeIsModified = false;
+      if (fileHasBackup(filePath)) {
+        this.codeIsModified = true;
+      }
+    });
+  }
+
   private _codeEqualsBackup(codePath: string) {
-    const workingFile = path.join(this.context.extensionPath, codePath);
+    // const workingFile = path.join(this.context.extensionPath, codePath);
+    const workingFile = codePath;
     const backupFile = workingFile.replace("/sections/", "/sectionsBackup/");
 
     const workingFileContents = readFileSync(workingFile, {
@@ -412,6 +481,9 @@ export default class Quickstart {
     ${this.currentSection.html()}
     <button class="run-code">Execute Current Code</button>
     <button class="reset-section">Reset Section</button>
+    <button class="reset-code ${
+      this.codeIsModified ? "" : "hide"
+    }">Reset Code</button>
     <button class="next-step ${
       this.currentSection.isDone() ? "hide" : ""
     }" >Next Step</button>
