@@ -47,6 +47,8 @@ export default class QuickstartSection {
     }
   }
 
+  previousStep() {}
+
   doc() {
     return this._steps[this.currentStep].doc;
   }

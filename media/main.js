@@ -50,7 +50,7 @@
   });
 
   document.getElementById("previous")?.addEventListener("click", () => {
-    handleNext();
+    handlePrevious();
   });
 
   document.querySelectorAll(".run-code").forEach((element) => {
@@ -79,6 +79,10 @@
 
   function handleNext() {
     vscode.postMessage({ type: "next" });
+  }
+
+  function handlePrevious() {
+    vscode.postMessage({ type: "previous" });
   }
 
   function handleRunCode() {

@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import path from "path";
 import getNonce from "./utils/getNonce";
-import { writeFileSync, readFileSync, read } from "fs";
+import { writeFileSync, readFileSync } from "fs";
 import os from "os";
 import QuickstartSection from "./quickstartSection";
 import { TutorialData } from "./quickstartSection";
@@ -9,11 +9,11 @@ import { TutorialData } from "./quickstartSection";
 export default class Quickstart {
   public metadata: TutorialData;
   public editor: vscode.TextEditor | undefined;
-  public _panel: vscode.WebviewPanel | undefined;
   public sections: QuickstartSection[];
   public context: vscode.ExtensionContext;
   public currentSectionIndex = 0;
   public currentSection: QuickstartSection;
+  public _panel: vscode.WebviewPanel | undefined;
   private _terminal: vscode.Terminal | undefined;
 
   constructor(metadata: TutorialData, context: vscode.ExtensionContext) {
@@ -318,9 +318,13 @@ export default class Quickstart {
             this.currentSection.nextStep();
             this.openSection(this.currentSectionIndex);
           }
+          break;
         }
         case "resetCodeFile": {
           this.resetCode();
+          break;
+        }
+        case "previous": {
           break;
         }
       }
