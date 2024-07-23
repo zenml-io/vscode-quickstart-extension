@@ -12,7 +12,7 @@ interface TutorialData {
 interface SectionStep {
   doc: string;
   docHTML?: string;
-  code: string;
+  code?: string;
   html?: string;
 }
 
@@ -137,11 +137,11 @@ export default class Quickstart {
   }
 
   public resetCode() {
-    if (!this.editor) {
+    const openCode = this.currentSection.code();
+    if (!this.editor || !openCode) {
       return;
     }
     //get the current open section
-    const openCode = this.currentSection.code();
     //replace the path to point to the backup
     const backupPath =
       this.context.extensionPath +
@@ -169,6 +169,24 @@ export default class Quickstart {
 
   async openSection(sectionId: number) {
     this._setSection(sectionId);
+    const openCode = this.currentSection.code();
+
+    if (!openCode) {
+      const currentEditor = this.editor?.document;
+      if (currentEditor) {
+        vscode.window
+          .showTextDocument(currentEditor, {
+            preview: true,
+            preserveFocus: false,
+          })
+          .then(() => {
+            return vscode.commands.executeCommand(
+              "workbench.action.closeActiveEditor"
+            );
+          });
+      }
+      return;
+    }
 
     await vscode.commands.executeCommand("vscode.setEditorLayout", {
       orientation: 0,
@@ -178,7 +196,7 @@ export default class Quickstart {
       ],
     });
 
-    this.openCodePanel(this.currentSection.code());
+    this.openCodePanel(openCode);
     this.openDocPanel(this.currentSection.title, this.currentSection.docHTML());
   }
 
