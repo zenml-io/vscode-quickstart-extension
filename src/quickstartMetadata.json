@@ -24,7 +24,8 @@
           "html": "zenmlQuickstart/sections/basicPipeline/connectToZenmlCloud.html"
         },
         {
-          "doc": "zenmlQuickstart/sections/basicPipeline/finish.md"
+          "doc": "zenmlQuickstart/sections/basicPipeline/finish.md",
+          "code": "zenmlQuickstart/sections/basicPipeline/code2.py"
         }
       ]
     },

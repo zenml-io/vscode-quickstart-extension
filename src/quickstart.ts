@@ -6,94 +6,6 @@ import os from "os";
 import QuickstartSection from "./quickstartSection";
 import { TutorialData } from "./quickstartSection";
 
-interface TutorialData {
-  sections: Section[];
-}
-
-interface SectionStep {
-  doc: string;
-  docHTML?: string;
-  code?: string;
-  html?: string;
-}
-
-interface Section {
-  title: string;
-  description: string;
-  steps: SectionStep[];
-}
-
-class QuickstartSection {
-  public title: string;
-  public context: vscode.ExtensionContext;
-  public description: string;
-  public currentStep: number;
-  private _steps: SectionStep[];
-  private _done = false;
-
-  constructor(section: Section, context: vscode.ExtensionContext) {
-    this.context = context;
-    this.title = section.title;
-    this.description = section.description;
-    this._steps = section.steps;
-    this._convertStepMarkdown();
-    this.currentStep = 0;
-    return this;
-  }
-
-  nextStep() {
-    if (this.currentStep + 1 < this._steps.length) {
-      this.currentStep++;
-    }
-    if (this.currentStep >= this._steps.length - 1) {
-      this._done = true;
-    }
-  }
-
-  doc() {
-    return this._steps[this.currentStep].doc;
-  }
-
-  docHTML() {
-    const html = this._steps[this.currentStep].docHTML;
-
-    return html ? html : "";
-  }
-
-  code() {
-    return this._steps[this.currentStep].code;
-  }
-
-  html() {
-    const file = this._steps[this.currentStep].html;
-
-    if (file) {
-      const htmlPath = path.join(this.context.extensionPath, file);
-      const htmlContent = readFileSync(htmlPath, { encoding: "utf-8" });
-
-      return htmlContent;
-    } else {
-      return "";
-    }
-  }
-
-  reset() {
-    this.currentStep = 0;
-    this._done = false;
-  }
-
-  isDone() {
-    return this._done;
-  }
-
-  private _convertStepMarkdown() {
-    this._steps.forEach((step) => {
-      const tutorialPath = path.join(this.context.extensionPath, step.doc);
-      step.docHTML = generateHTMLfromMD(tutorialPath);
-    });
-  }
-}
-
 export default class Quickstart {
   public metadata: TutorialData;
   public editor: vscode.TextEditor | undefined;
@@ -166,25 +78,38 @@ export default class Quickstart {
     this.editor.document.save();
   }
 
+  closeCurrentEditor() {
+    const currentEditor = this.editor?.document;
+    if (currentEditor) {
+      vscode.window
+        .showTextDocument(currentEditor, {
+          preview: true,
+          preserveFocus: false,
+        })
+        .then(() => {
+          return vscode.commands.executeCommand(
+            "workbench.action.closeActiveEditor"
+          );
+        });
+    }
+  }
+
   // Doc Panel
   async openSection(sectionId: number) {
     this._setSection(sectionId);
     const openCode = this.currentSection.code();
 
     if (!openCode) {
-      const currentEditor = this.editor?.document;
-      if (currentEditor) {
-        vscode.window
-          .showTextDocument(currentEditor, {
-            preview: true,
-            preserveFocus: false,
-          })
-          .then(() => {
-            return vscode.commands.executeCommand(
-              "workbench.action.closeActiveEditor"
-            );
-          });
-      }
+      this.closeCurrentEditor();
+      await vscode.commands.executeCommand("vscode.setEditorLayout", {
+        orientation: 0,
+        groups: [{ groups: [{}], size: 1 }],
+      });
+
+      this.openDocPanel(
+        this.currentSection.title,
+        this.currentSection.docHTML()
+      );
       return;
     }
 
