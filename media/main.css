@@ -1,29 +1,26 @@
 body {
+  padding: 0;
   background-color: transparent;
 }
-.accordion {
-  /* background-color: #eee; */
-  /* color: #444; */
-  cursor: pointer;
-  padding: 18px;
-  width: 100%;
-  border: none;
-  text-align: left;
-  outline: none;
-  font-size: 15px;
-  transition: 0.4s;
+
+header {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
 }
 
-.active,
-.accordion:hover {
-  /* background-color: #ccc; */
+header button {
+  display: flex;
+  width: 100px;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
 }
 
-.panel {
-  padding: 0 18px;
-  display: none;
-  /* background-color: white; */
-  overflow: hidden;
+main {
+  padding: var(--container-paddding);
 }
 
 .hide {
@@ -31,6 +28,39 @@ body {
 }
 
 footer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
   position: absolute;
   bottom: 0px;
+  background-color: var(--vscode-editor-background);
+  margin-bottom: 0;
+}
+
+#progress-bar {
+  height: 4px;
+}
+
+#progress {
+  height: 4px;
+  background-color: var(--vscode-progressBar-background);
+}
+
+.arrow {
+  /* background-color: var(--vscode-button-secondaryBackground); */
+  width: 30px;
+}
+
+/* .arrow:hover {
+  background-color: var(--vscode-button-secondaryHoverBackground);
+} */
+
+nav {
+  display: flex;
+  align-items: center;
+}
+
+nav p {
+  flex-grow: 1;
+  text-align: center;
 }

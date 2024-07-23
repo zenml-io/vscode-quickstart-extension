@@ -101,7 +101,7 @@ export default class Quickstart {
 
   // Terminal
   public closeTerminal() {
-    this._terminal?.hide();
+    this.terminal?.hide();
   }
 
   sendTerminalCommand(command: string) {
@@ -310,6 +310,15 @@ export default class Quickstart {
           this.openSection(this.currentSectionIndex);
           break;
         }
+        case "next": {
+          if (this.currentSection.isDone()) {
+            this.openSection(this.currentSectionIndex + 1);
+            this.closeTerminal();
+          } else {
+            this.currentSection.nextStep();
+            this.openSection(this.currentSectionIndex);
+          }
+        }
         case "resetCodeFile": {
           this.resetCode();
           break;
@@ -336,6 +345,16 @@ export default class Quickstart {
       vscode.Uri.joinPath(this.context.extensionUri, "media", "main.css")
     );
 
+    const codiconsUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(
+        this.context.extensionUri,
+        "node_modules",
+        "@vscode/codicons",
+        "dist",
+        "codicon.css"
+      )
+    );
+
     // Use a nonce to only allow a specific script to be run.
     const nonce = getNonce();
 
@@ -344,7 +363,7 @@ export default class Quickstart {
   <html lang="en">
   <head>
     <meta charset="UTF-8">
-  
+
     <!--
       Use a content security policy to only allow loading styles from our extension directory,
       and only allow scripts that have a specific nonce.
@@ -352,29 +371,49 @@ export default class Quickstart {
     -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${
       webview.cspSource
-    }; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
+    }; style-src ${webview.cspSource}; font-src ${
+      webview.cspSource
+    }; script-src 'nonce-${nonce}';">
   
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="${styleResetUri}" rel="stylesheet">
     <link href="${styleVSCodeUri}" rel="stylesheet">
     <link href="${styleMainUri}" rel="stylesheet">
+    <link href="${codiconsUri}" rel="stylesheet" />
   
     <title>Quickstart Guide</title>
   </head>
-  
   <body>
-    ${docContent}
-    ${this.currentSection.html()}
-    <button class="run-code">Execute Current Code</button>
-    <button class="reset-section">Reset Section</button>
-    <button class="next-step ${
-      this.currentSection.isDone() ? "hide" : ""
-    }" >Next Step</button>
-    <button class="next-section ${
-      this.currentSection.isDone() ? "" : "hide"
-    }" data-id="${this.currentSectionIndex + 1}">Go to next section</button>
+    <header>
+    <button class="reset-code secondary"><i class="codicon codicon-history"></i>reset code</button>
+      <button class="run-code"><i class="codicon codicon-play"></i>run code</button>
+      <!-- <button class="reset-section">Reset Section</button> -->
+    </header>
+    <main>
+      ${docContent}
+      ${this.currentSection.html()}
+    </main>
     <footer>  
-      <p>Section ${this.currentSectionIndex + 1} of ${this.sections.length}</p>
+      <div id="progress-bar">
+        <div id="progress" data-current="${
+          this.currentSectionIndex + 1
+        }" data-end="${this.sections.length}"></div>
+      </div>
+      <nav>
+        <button class="arrow secondary" id="previous"><i class="codicon codicon-chevron-left"></i></button>
+        <p>Section ${this.currentSectionIndex + 1} of ${
+      this.sections.length
+    }</p>
+        <button class="arrow secondary" id="next"><i class="codicon codicon-chevron-right"></i></button>
+        <!-- <button class="next-step ${
+          this.currentSection.isDone() ? "hide" : ""
+        }" >Next Step</button>
+        <button class="next-section ${
+          this.currentSection.isDone() ? "" : "hide"
+        }" data-id="${
+      this.currentSectionIndex + 1
+    }">Go to next section</button> -->
+      </nav>
     </footer>
     <script nonce="${nonce}" src="${scriptUri}"></script>
   </body>

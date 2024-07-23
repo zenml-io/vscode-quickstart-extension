@@ -15,7 +15,7 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   createSectionBackup(extensionUri);
-
+  // @ts-ignore
   const quickstart = new Quickstart(quickstartMetadata, context);
 
   // If a user closes the terminal the extension opened we set it
