@@ -14,6 +14,7 @@ export default class Quickstart {
   public context: vscode.ExtensionContext;
   public currentSectionIndex = 0;
   public currentSection: QuickstartSection;
+  public codeIsModified: boolean = false;
   private _terminal: vscode.Terminal | undefined;
 
   constructor(metadata: TutorialData, context: vscode.ExtensionContext) {
@@ -121,6 +122,7 @@ export default class Quickstart {
       ],
     });
 
+    this.codeIsModified = !this._codeEqualsBackup(openCode);
     this.openCodePanel(openCode);
     this.openDocPanel(this.currentSection.title, this.currentSection.docHTML());
   }
@@ -347,6 +349,18 @@ export default class Quickstart {
         }
       }
     });
+  }
+
+  private _codeEqualsBackup(codePath: string) {
+    const workingFile = path.join(this.context.extensionPath, codePath);
+    const backupFile = workingFile.replace("/sections/", "/sectionsBackup/");
+
+    const workingFileContents = readFileSync(workingFile, {
+      encoding: "utf-8",
+    });
+    const backupFileContents = readFileSync(backupFile, { encoding: "utf-8" });
+
+    return workingFileContents === backupFileContents;
   }
 
   private _generateHTML(docContent: string) {
