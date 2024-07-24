@@ -13,6 +13,8 @@ export default class Quickstart {
   public context: vscode.ExtensionContext;
   public currentSectionIndex = 0;
   public currentSection: QuickstartSection;
+  public latestSectionIndex = 0;
+  public latestStepIndex = 0;
   public _panel: vscode.WebviewPanel | undefined;
   private _terminal: vscode.Terminal | undefined;
 
@@ -94,9 +96,26 @@ export default class Quickstart {
     }
   }
 
+  async back() {
+    if (this.currentSection.currentStep === 0) {
+      this.openSection(--this.currentSectionIndex);
+    } else {
+      this.currentSection.previousStep();
+      this.openSection(this.currentSectionIndex);
+    }
+    // if we are on the first step
+    // then open the previous section
+    // otherwise, decrem
+  }
   // Doc Panel
   async openSection(sectionId: number) {
     this._setSection(sectionId);
+
+    if (this.currentSectionIndex > this.latestSectionIndex) {
+      this.latestSectionIndex = this.currentSectionIndex;
+      this.latestStepIndex = 0;
+    }
+
     const openCode = this.currentSection.code();
 
     if (!openCode) {
@@ -326,10 +345,9 @@ export default class Quickstart {
           await this.runCode();
           break;
         }
-        case "resetSection": {
-          this.currentSection.reset();
-          this.openSection(this.currentSectionIndex);
-          this.closeTerminal();
+        // for dev only
+        case "editText": {
+          this.openCodePanel(this.currentSection.doc());
           break;
         }
         case "serverConnect": {
@@ -356,6 +374,7 @@ export default class Quickstart {
           break;
         }
         case "previous": {
+          this.back();
           break;
         }
       }
@@ -393,6 +412,13 @@ export default class Quickstart {
     // Use a nonce to only allow a specific script to be run.
     const nonce = getNonce();
 
+    // for showing / hiding nav buttons
+    const beginning =
+      this.currentSectionIndex === 0 && this.currentSection.currentStep === 0;
+    const end =
+      this.currentSectionIndex === this.sections.length - 1 &&
+      this.currentSection.isDone();
+
     return /*html*/ `
   <!DOCTYPE html>
   <html lang="en">
@@ -420,9 +446,9 @@ export default class Quickstart {
   </head>
   <body>
     <header>
-    <button class="reset-code secondary"><i class="codicon codicon-history"></i>reset code</button>
+      <button class="secondary" id="edit-text">edit text</button>
+      <button class="reset-code secondary"><i class="codicon codicon-history"></i>reset code</button>
       <button class="run-code"><i class="codicon codicon-play"></i>run code</button>
-      <!-- <button class="reset-section">Reset Section</button> -->
     </header>
     <main>
       ${docContent}
@@ -435,19 +461,15 @@ export default class Quickstart {
         }" data-end="${this.sections.length}"></div>
       </div>
       <nav>
-        <button class="arrow secondary" id="previous"><i class="codicon codicon-chevron-left"></i></button>
+        <button class="arrow secondary ${
+          beginning ? "hide" : ""
+        }" id="previous"><i class="codicon codicon-chevron-left"></i></button>
         <p>Section ${this.currentSectionIndex + 1} of ${
       this.sections.length
     }</p>
-        <button class="arrow secondary" id="next"><i class="codicon codicon-chevron-right"></i></button>
-        <!-- <button class="next-step ${
-          this.currentSection.isDone() ? "hide" : ""
-        }" >Next Step</button>
-        <button class="next-section ${
-          this.currentSection.isDone() ? "" : "hide"
-        }" data-id="${
-      this.currentSectionIndex + 1
-    }">Go to next section</button> -->
+        <button class="arrow secondary ${
+          end ? "hide" : ""
+        }" id="next"><i class="codicon codicon-chevron-right"></i></button>
       </nav>
     </footer>
     <script nonce="${nonce}" src="${scriptUri}"></script>

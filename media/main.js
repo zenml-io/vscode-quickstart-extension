@@ -53,6 +53,10 @@
     handlePrevious();
   });
 
+  document.getElementById("edit-text")?.addEventListener("click", () => {
+    vscode.postMessage({ type: "editText" });
+  });
+
   document.querySelectorAll(".run-code").forEach((element) => {
     element.addEventListener("click", () => {
       handleRunCode();
