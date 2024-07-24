@@ -19,6 +19,7 @@ export default class Quickstart {
   public currentSection: QuickstartSection;
   public codeMatchesBackup: boolean = true;
   private _terminal: vscode.Terminal | undefined;
+  private _latestSectionIdx = 0;
 
   constructor(metadata: TutorialData, context: vscode.ExtensionContext) {
     this.metadata = metadata;
@@ -111,18 +112,14 @@ export default class Quickstart {
       this.currentSection.previousStep();
       this.openSection(this.currentSectionIndex);
     }
-    // if we are on the first step
-    // then open the previous section
-    // otherwise, decrem
   }
   // Doc Panel
   async openSection(sectionId: number) {
     this._setSection(sectionId);
 
-    // if (this.currentSectionIndex > this.latestSectionIndex) {
-    //   this.latestSectionIndex = this.currentSectionIndex;
-    //   this.latestStepIndex = 0;
-    // }
+    if (sectionId > this._latestSectionIdx) {
+      this._latestSectionIdx = sectionId;
+    }
 
     const openCode = this.currentSection.code();
 
@@ -331,10 +328,10 @@ export default class Quickstart {
     watcher.onDidCreate((uri) => {
       if (uri.fsPath.endsWith(successFileName)) {
         vscode.window.showInformationMessage("Code Ran Successfully! 🎉");
-        this.openNextStep();
         if (onSuccessCallback) {
           onSuccessCallback();
         }
+        this.openNextStep();
       } else if (uri.fsPath.endsWith(errorFileName)) {
         vscode.window.showErrorMessage("Code Run Encountered an Error. ❌");
       }
@@ -362,7 +359,6 @@ export default class Quickstart {
           break;
         }
         case "runCodeFile": {
-          console.log("Code File");
           await this.runCode();
           break;
         }
@@ -501,6 +497,7 @@ export default class Quickstart {
     const end =
       this.currentSectionIndex === this.sections.length - 1 &&
       this.currentSection.isDone();
+    const latestSection = this.currentSectionIndex === this._latestSectionIdx;
 
     return /*html*/ `
   <!DOCTYPE html>
@@ -552,8 +549,8 @@ export default class Quickstart {
         <p>Section ${this.currentSectionIndex + 1} of ${
       this.sections.length
     }</p>
-        <button class="arrow secondary ${
-          end ? "hide" : ""
+        <button class="arrow ${latestSection ? "": "secondary"} ${
+          end || !this.currentSection.hasBeenDone() ? "hide" : ""
         }" id="next"><i class="codicon codicon-chevron-right"></i></button>
       </nav>
     </footer>
