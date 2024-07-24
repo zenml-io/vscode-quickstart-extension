@@ -135,3 +135,7 @@ nav p {
 button#zenml-server-connect {
   width: 100px;
 }
+
+.tip button {
+  width: auto;
+}
