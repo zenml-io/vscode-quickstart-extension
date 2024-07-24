@@ -2,7 +2,6 @@ import * as vscode from "vscode";
 import path from "path";
 import getNonce from "./utils/getNonce";
 import { writeFileSync, readFileSync } from "fs";
-import { writeFileSync, readFileSync } from "fs";
 import os from "os";
 import QuickstartSection from "./quickstartSection";
 import { TutorialData } from "./quickstartSection";
@@ -120,10 +119,10 @@ export default class Quickstart {
   async openSection(sectionId: number) {
     this._setSection(sectionId);
 
-    if (this.currentSectionIndex > this.latestSectionIndex) {
-      this.latestSectionIndex = this.currentSectionIndex;
-      this.latestStepIndex = 0;
-    }
+    // if (this.currentSectionIndex > this.latestSectionIndex) {
+    //   this.latestSectionIndex = this.currentSectionIndex;
+    //   this.latestStepIndex = 0;
+    // }
 
     const openCode = this.currentSection.code();
 
@@ -268,6 +267,18 @@ export default class Quickstart {
     }
   }
 
+  async openEditPanel(codePath: string) {
+    const onDiskPath = path.join(this.context.extensionPath, codePath);
+    const filePath = vscode.Uri.file(onDiskPath);
+    try {
+      const document = await vscode.workspace.openTextDocument(filePath);
+      this.currentlyDisplayingDocument = document;
+      await vscode.window.showTextDocument(document, vscode.ViewColumn.Two);
+    } catch (error) {
+      vscode.window.showErrorMessage(`Failed to open file: ${error}`);
+    }
+  }
+
   // PRIVATE METHODS:
 
   private _setSection(index: number) {
@@ -357,7 +368,7 @@ export default class Quickstart {
         }
         // for dev only
         case "editText": {
-          this.openCodePanel(this.currentSection.doc());
+          this.openEditPanel(this.currentSection.doc());
           break;
         }
         case "serverConnect": {
@@ -401,7 +412,7 @@ export default class Quickstart {
       }
     });
   }
-  
+
   private _codeModifiedListener() {
     vscode.workspace.onDidChangeTextDocument((event) => {
       if (event.contentChanges.length === 0) {
@@ -519,7 +530,9 @@ export default class Quickstart {
   <body>
     <header>
       <button class="secondary" id="edit-text">edit text</button>
-      <button class="reset-code secondary"><i class="codicon codicon-history"></i>reset code</button>
+      <button class="reset-code secondary ${
+        this.codeMatchesBackup ? "hide" : ""
+      }"><i class="codicon codicon-history"></i>reset code</button>
       <button class="run-code"><i class="codicon codicon-play"></i>run code</button>
     </header>
     <main>
