@@ -29,6 +29,9 @@ export default class Quickstart {
     this._activeTextEditorListener();
     this.context = context;
     this.currentSection = this.sections[0];
+    vscode.window
+      .createTerminal({ hideFromUser: true })
+      .sendText("zenml init && zenml stack set default");
     this.openSection(0);
   }
 
