@@ -1,8 +1,8 @@
-# 🏔️ Step 5: Training Pipelines
+# Training Pipelines ⌚
 
 Now that we have our data it makes sense to train some models to get a sense of
-how difficult the task is. The Breast Cancer dataset is sufficiently large and complex 
-that it's unlikely we'll be able to train a model that behaves perfectly since the problem 
+how difficult the task is. The Breast Cancer dataset is sufficiently large and complex
+that it's unlikely we'll be able to train a model that behaves perfectly since the problem
 is inherently complex, but we can get a sense of what a reasonable baseline looks like.
 
 We'll start with two simple models, a SGD Classifier and a Random Forest

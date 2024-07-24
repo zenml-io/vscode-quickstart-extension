@@ -1,4 +1,4 @@
-# 🏔️ Step 7: Consuming the Model in Production
+# Consuming the Model in Production 🚀
 
 The batch inference pipeline simply takes the model marked as `production` and runs inference on it
 with `live data`. The critical step here is the `inference_predict` step, where we load the model in memory

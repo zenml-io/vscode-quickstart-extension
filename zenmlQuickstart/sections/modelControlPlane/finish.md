@@ -1,4 +1,5 @@
-# 🏔️ Step 6: Use the Model Control Plane
+# Using the Model Control Plane 👷‍♂️
+
 If you are a [ZenML Cloud](https://zenml.io/cloud) user, you can see all of this visualized in the dashboard:
 
 <img src="/zenmlQuickstart/assets/cloud_mcp_screenshot.png" width="70%" alt="Model Control Plane">
@@ -13,6 +14,7 @@ model to `production`. You can do this by simply setting the `stage` of
 your chosen model version to the `production` tag.
 
 # Set our best classifier to production
+
 ```python
 rf_zenml_model_version.set_stage("production", force=True)
 ```

@@ -1,3 +1,3 @@
-# 🏔️ Step 1: Connect to ZenML Cloud
+# A Basic Pipeline 🌱
 
 ADD SOMETHING HERE ABOUT THE SIMPLE PIPELINE + STEP
