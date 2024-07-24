@@ -1,19 +1,23 @@
 import * as vscode from "vscode";
 import path from "path";
 import getNonce from "./utils/getNonce";
-import { writeFileSync, readFileSync, read } from "fs";
+import { writeFileSync, readFileSync } from "fs";
 import os from "os";
 import QuickstartSection from "./quickstartSection";
 import { TutorialData } from "./quickstartSection";
+import fileHasBackup from "./utils/fileBackupPath";
+import fileBackupPath from "./utils/fileBackupPath";
 
 export default class Quickstart {
   public metadata: TutorialData;
   public editor: vscode.TextEditor | undefined;
+  public currentlyDisplayingDocument: vscode.TextDocument | undefined;
   public _panel: vscode.WebviewPanel | undefined;
   public sections: QuickstartSection[];
   public context: vscode.ExtensionContext;
   public currentSectionIndex = 0;
   public currentSection: QuickstartSection;
+  public codeMatchesBackup: boolean = true;
   private _terminal: vscode.Terminal | undefined;
 
   constructor(metadata: TutorialData, context: vscode.ExtensionContext) {
@@ -21,6 +25,8 @@ export default class Quickstart {
     this.sections = this.metadata.sections.map((section) => {
       return new QuickstartSection(section, context);
     });
+    this._codeModifiedListener();
+    this._activeTextEditorListener();
     this.context = context;
     this.currentSection = this.sections[0];
     this.openSection(0);
@@ -47,35 +53,39 @@ export default class Quickstart {
     return this._panel as vscode.WebviewPanel;
   }
 
-  public resetCode() {
-    const openCode = this.currentSection.code();
-    if (!this.editor || !openCode) {
+  public async resetCode() {
+    const doc = this.currentlyDisplayingDocument;
+    if (!doc) {
       return;
     }
-    //get the current open section
+
+    await vscode.window.showTextDocument(doc, {
+      preview: true,
+      preserveFocus: false,
+      viewColumn: vscode.ViewColumn.Two,
+    });
+
+    const activeEditor = vscode.window.activeTextEditor;
+
+    // Guard against errors when file doesn't have backup or no activeEditor
+    if (!fileHasBackup(doc.uri.fsPath) || !activeEditor) {
+      return;
+    }
+
     //replace the path to point to the backup
-    const backupPath =
-      this.context.extensionPath +
-      "/" +
-      openCode.replace("sections", "sectionsBackup");
-    console.log(backupPath);
+    const backupPath = doc.uri.fsPath.replace("sections", "sectionsBackup");
 
     //get the text from the backup
     const originalCode = readFileSync(backupPath, { encoding: "utf-8" });
 
     // A range that covers the entire document
-    const documentRange = new vscode.Range(
-      0,
-      0,
-      this.editor.document.lineCount,
-      Infinity
-    );
+    const documentRange = new vscode.Range(0, 0, doc.lineCount, Infinity);
 
-    this.editor.edit((editBuilder) => {
+    activeEditor.edit((editBuilder) => {
       editBuilder.replace(documentRange, originalCode);
     });
 
-    this.editor.document.save();
+    activeEditor.document.save();
   }
 
   closeCurrentEditor() {
@@ -230,6 +240,7 @@ export default class Quickstart {
     const filePath = vscode.Uri.file(onDiskPath);
     try {
       const document = await vscode.workspace.openTextDocument(filePath);
+      this.currentlyDisplayingDocument = document;
       this.editor = await vscode.window.showTextDocument(
         document,
         vscode.ViewColumn.Two
@@ -347,6 +358,68 @@ export default class Quickstart {
         }
       }
     });
+  }
+
+  private _activeTextEditorListener() {
+    vscode.window.onDidChangeActiveTextEditor((event) => {
+      this.currentlyDisplayingDocument = event
+        ? event.document
+        : this.currentlyDisplayingDocument;
+      if (event) {
+        this._changeEventHandle(event);
+      }
+    });
+  }
+
+  private _codeModifiedListener() {
+    vscode.workspace.onDidChangeTextDocument((event) => {
+      if (event.contentChanges.length === 0) {
+        return;
+      }
+      this._changeEventHandle(event);
+    });
+  }
+
+  private _changeEventHandle(
+    event: vscode.TextDocumentChangeEvent | vscode.TextEditor
+  ) {
+    const filePath = event.document.uri.fsPath;
+    if (!fileBackupPath(filePath)) {
+      // Guard against files without backup
+      this.codeMatchesBackup = true;
+      this.openDocPanel(
+        this.currentSection.title,
+        this.currentSection.docHTML()
+      );
+    } else {
+      // Checks if code matches and re-renders panel
+      const codeMatch = this._codeEqualsBackup();
+      if (codeMatch !== this.codeMatchesBackup) {
+        this.codeMatchesBackup = codeMatch;
+        this.openDocPanel(
+          this.currentSection.title,
+          this.currentSection.docHTML()
+        );
+      }
+    }
+  }
+
+  private _codeEqualsBackup() {
+    const activeEditor = vscode.window.activeTextEditor;
+    if (!activeEditor) {
+      return false;
+    }
+
+    const backupPath = fileBackupPath(activeEditor?.document.uri.fsPath);
+
+    if (!backupPath) {
+      return false;
+    }
+
+    const originalContents = readFileSync(backupPath, { encoding: "utf-8" });
+    const workingFileContents = activeEditor.document.getText();
+
+    return workingFileContents === originalContents;
   }
 
   private _generateHTML(docContent: string) {
