@@ -54,7 +54,6 @@ export default class Quickstart {
   }
 
   public async resetCode() {
-    // const openCode = this.currentSection.code();
     const doc = this.currentlyDisplayingDocument;
     if (!doc) {
       return;
@@ -67,16 +66,12 @@ export default class Quickstart {
     });
 
     const activeEditor = vscode.window.activeTextEditor;
-    // const openCode = activeEditor.document.uri.fsPath;
 
     // Guard against errors when file doesn't have backup or no activeEditor
     if (!fileHasBackup(doc.uri.fsPath) || !activeEditor) {
       return;
     }
 
-    // focus the document after clicking the button
-
-    //get the current open section
     //replace the path to point to the backup
     const backupPath = doc.uri.fsPath.replace("sections", "sectionsBackup");
 
