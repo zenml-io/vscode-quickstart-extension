@@ -471,9 +471,6 @@ export default class Quickstart {
     ${this.currentSection.html()}
     <button class="run-code">Execute Current Code</button>
     <button class="reset-section">Reset Section</button>
-    <button class="reset-code ${
-      this.codeMatchesBackup ? "hide" : ""
-    }">Reset Code</button>
     <button class="next-step ${
       this.currentSection.isDone() ? "hide" : ""
     }" >Next Step</button>
