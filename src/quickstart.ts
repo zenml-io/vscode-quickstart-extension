@@ -326,19 +326,27 @@ export default class Quickstart {
 
     // Logic to run once a signal file is created
     watcher.onDidCreate((uri) => {
+      console.log("Watcher callback running for: ", uri.fsPath)
+      console.log("my success filename: ", successFileName)
       if (uri.fsPath.endsWith(successFileName)) {
+        console.log("Success file name match: ", successFileName)
         vscode.window.showInformationMessage("Code Ran Successfully! 🎉");
         if (onSuccessCallback) {
           onSuccessCallback();
         }
+
+
+        console.log("we dispose for: ", uri.fsPath);
+        vscode.workspace.fs.delete(uri);
+        watcher.dispose();
         this.openNextStep();
       } else if (uri.fsPath.endsWith(errorFileName)) {
         vscode.window.showErrorMessage("Code Run Encountered an Error. ❌");
+        vscode.workspace.fs.delete(uri);
+        watcher.dispose();
       }
 
       // Delete the signal file and dispose the watcher
-      vscode.workspace.fs.delete(uri);
-      watcher.dispose();
     });
 
     // Return paths for both success and error signal files for external use
@@ -510,11 +518,9 @@ export default class Quickstart {
       and only allow scripts that have a specific nonce.
       (See the 'webview-sample' extension sample for img-src content security policy examples)
     -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${
-      webview.cspSource
-    }; style-src ${webview.cspSource}; font-src ${
-      webview.cspSource
-    }; script-src 'nonce-${nonce}';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource
+      }; style-src ${webview.cspSource}; font-src ${webview.cspSource
+      }; script-src 'nonce-${nonce}';">
   
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="${styleResetUri}" rel="stylesheet">
@@ -527,8 +533,7 @@ export default class Quickstart {
   <body>
     <header>
       <button class="secondary" id="edit-text">edit text</button>
-      <button class="reset-code secondary ${
-        this.codeMatchesBackup ? "hide" : ""
+      <button class="reset-code secondary ${this.codeMatchesBackup ? "hide" : ""
       }"><i class="codicon codicon-history"></i>reset code</button>
       <button class="run-code"><i class="codicon codicon-play"></i>run code</button>
     </header>
@@ -538,20 +543,16 @@ export default class Quickstart {
     </main>
     <footer>  
       <div id="progress-bar">
-        <div id="progress" data-current="${
-          this.currentSectionIndex + 1
-        }" data-end="${this.sections.length}"></div>
+        <div id="progress" data-current="${this.currentSectionIndex + 1
+      }" data-end="${this.sections.length}"></div>
       </div>
       <nav>
-        <button class="arrow secondary ${
-          beginning ? "hide" : ""
-        }" id="previous"><i class="codicon codicon-chevron-left"></i></button>
-        <p>Section ${this.currentSectionIndex + 1} of ${
-      this.sections.length
-    }</p>
-        <button class="arrow ${latestSection ? "": "secondary"} ${
-          end || !this.currentSection.hasBeenDone() ? "hide" : ""
-        }" id="next"><i class="codicon codicon-chevron-right"></i></button>
+        <button class="arrow secondary ${beginning ? "hide" : ""
+      }" id="previous"><i class="codicon codicon-chevron-left"></i></button>
+        <p>Section ${this.currentSectionIndex + 1} of ${this.sections.length
+      }</p>
+        <button class="arrow ${latestSection ? "" : "secondary"} ${end || !this.currentSection.hasBeenDone() ? "hide" : ""
+      }" id="next"><i class="codicon codicon-chevron-right"></i></button>
       </nav>
     </footer>
     <script nonce="${nonce}" src="${scriptUri}"></script>
