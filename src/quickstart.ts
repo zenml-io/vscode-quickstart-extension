@@ -1,12 +1,12 @@
 import * as vscode from "vscode";
 import path from "path";
 import getNonce from "./utils/getNonce";
-import { writeFileSync, readFileSync } from "fs";
-import os from "os";
+import { readFileSync } from "fs";
 import QuickstartSection from "./quickstartSection";
 import { TutorialData } from "./quickstartSection";
 import fileHasBackup from "./utils/fileBackupPath";
 import fileBackupPath from "./utils/fileBackupPath";
+import codeRunner from "./utils/codeRunner";
 
 export default class Quickstart {
   public metadata: TutorialData;
@@ -181,44 +181,25 @@ export default class Quickstart {
         });
       }
 
-      const filePath: string = this.editor.document.uri.fsPath;
-
-      // watcher to automatically run next step when current file runs
-      const { successFilePath, errorFilePath } = this._initializeFileWatcher(
-        filePath,
-        callback
+      codeRunner(
+        this.terminal,
+        this.editor.document.uri,
+        () => {
+          vscode.window.showInformationMessage("Code Ran Successfully! 🎉");
+          if (callback) {
+            callback();
+          }
+          this.openNextStep();
+        },
+        () => {
+          vscode.window.showErrorMessage("Code Run Encountered an Error. ❌");
+        }
       );
-      this._runCode(filePath, successFilePath, errorFilePath);
 
       this.terminal.show(true);
     } catch (error) {
       vscode.window.showErrorMessage(`Failed to execute file: ${error}`);
     }
-  }
-
-  // package code into a bash script so user doesn't see watcher logic
-  private _runCode(
-    filePath: string,
-    successFilePath: string,
-    errorFilePath: string
-  ) {
-    const scriptPath = path.join(os.tmpdir(), "runCode.sh");
-
-    writeFileSync(
-      scriptPath,
-      `
-    clear
-    echo "Executing code..."
-    python "${filePath}"
-    if [ $? -eq 0 ]; then
-      touch "${successFilePath}"
-    else
-      touch "${errorFilePath}"
-    fi
-    `
-    );
-
-    this.sendTerminalCommand(`bash ${scriptPath}`);
   }
 
   // HELPERS
@@ -299,58 +280,6 @@ export default class Quickstart {
     this._panel.onDidDispose(() => {
       this._panel = undefined;
     });
-  }
-
-  // Watcher is created in the same directory as the file being executed
-  // So we're taking in the path to the file being executed and manipulating it
-  // to get the directory
-  private _initializeFileWatcher(path: string, onSuccessCallback?: Function) {
-    const removeLastFileFromPath = (filePath: string) => {
-      let sections = filePath.split("/");
-      sections.pop();
-      return sections.join("/") + "/";
-    };
-
-    const uniqueNumber = getNonce();
-    const successFileName = `runSuccess${uniqueNumber}.txt`;
-    const errorFileName = `runError${uniqueNumber}.txt`;
-
-    const pathWithoutEndFile = removeLastFileFromPath(path);
-    const successFilePath = `${pathWithoutEndFile}${successFileName}`;
-    const errorFilePath = `${pathWithoutEndFile}${errorFileName}`;
-
-    // File System watcher for signal files
-    const watcher = vscode.workspace.createFileSystemWatcher(
-      new vscode.RelativePattern(pathWithoutEndFile, "*.txt")
-    );
-
-    // Logic to run once a signal file is created
-    watcher.onDidCreate((uri) => {
-      console.log("Watcher callback running for: ", uri.fsPath)
-      console.log("my success filename: ", successFileName)
-      if (uri.fsPath.endsWith(successFileName)) {
-        console.log("Success file name match: ", successFileName)
-        vscode.window.showInformationMessage("Code Ran Successfully! 🎉");
-        if (onSuccessCallback) {
-          onSuccessCallback();
-        }
-
-
-        console.log("we dispose for: ", uri.fsPath);
-        vscode.workspace.fs.delete(uri);
-        watcher.dispose();
-        this.openNextStep();
-      } else if (uri.fsPath.endsWith(errorFileName)) {
-        vscode.window.showErrorMessage("Code Run Encountered an Error. ❌");
-        vscode.workspace.fs.delete(uri);
-        watcher.dispose();
-      }
-
-      // Delete the signal file and dispose the watcher
-    });
-
-    // Return paths for both success and error signal files for external use
-    return { successFilePath, errorFilePath };
   }
 
   private _registerView() {
@@ -518,9 +447,11 @@ export default class Quickstart {
       and only allow scripts that have a specific nonce.
       (See the 'webview-sample' extension sample for img-src content security policy examples)
     -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource
-      }; style-src ${webview.cspSource}; font-src ${webview.cspSource
-      }; script-src 'nonce-${nonce}';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${
+      webview.cspSource
+    }; style-src ${webview.cspSource}; font-src ${
+      webview.cspSource
+    }; script-src 'nonce-${nonce}';">
   
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="${styleResetUri}" rel="stylesheet">
@@ -533,7 +464,8 @@ export default class Quickstart {
   <body>
     <header>
       <button class="secondary" id="edit-text">edit text</button>
-      <button class="reset-code secondary ${this.codeMatchesBackup ? "hide" : ""
+      <button class="reset-code secondary ${
+        this.codeMatchesBackup ? "hide" : ""
       }"><i class="codicon codicon-history"></i>reset code</button>
       <button class="run-code"><i class="codicon codicon-play"></i>run code</button>
     </header>
@@ -543,16 +475,20 @@ export default class Quickstart {
     </main>
     <footer>  
       <div id="progress-bar">
-        <div id="progress" data-current="${this.currentSectionIndex + 1
-      }" data-end="${this.sections.length}"></div>
+        <div id="progress" data-current="${
+          this.currentSectionIndex + 1
+        }" data-end="${this.sections.length}"></div>
       </div>
       <nav>
-        <button class="arrow secondary ${beginning ? "hide" : ""
-      }" id="previous"><i class="codicon codicon-chevron-left"></i></button>
-        <p>Section ${this.currentSectionIndex + 1} of ${this.sections.length
-      }</p>
-        <button class="arrow ${latestSection ? "" : "secondary"} ${end || !this.currentSection.hasBeenDone() ? "hide" : ""
-      }" id="next"><i class="codicon codicon-chevron-right"></i></button>
+        <button class="arrow secondary ${
+          beginning ? "hide" : ""
+        }" id="previous"><i class="codicon codicon-chevron-left"></i></button>
+        <p>Section ${this.currentSectionIndex + 1} of ${
+      this.sections.length
+    }</p>
+        <button class="arrow ${latestSection ? "" : "secondary"} ${
+      end || !this.currentSection.hasBeenDone() ? "hide" : ""
+    }" id="next"><i class="codicon codicon-chevron-right"></i></button>
       </nav>
     </footer>
     <script nonce="${nonce}" src="${scriptUri}"></script>
