@@ -14,19 +14,6 @@
     });
   });
 
-  // document
-  //   .querySelector(".next-section")
-  //   ?.addEventListener("click", (element) => {
-  //     //@ts-ignore for dataset
-  //     const id = parseInt(element.target?.dataset.id, 10);
-  //     handleOpenSection(id);
-  //   });
-
-  // document.querySelector(".next-step")?.addEventListener("click", (element) => {
-  //   //@ts-ignore for dataset
-  //   handleNextStep();
-  // });
-
   document
     .querySelector(".reset-section")
     ?.addEventListener("click", (element) => {
@@ -43,6 +30,12 @@
     .getElementById("zenml-server-connect")
     ?.addEventListener("click", () => {
       handleServerConnect();
+    });
+
+    document
+    .getElementById("local-server-connect")
+    ?.addEventListener("click", () => {
+      handleConnectToLocalDashboard();
     });
 
   document.getElementById("next")?.addEventListener("click", () => {
@@ -65,12 +58,15 @@
 
   const progressElement = document.querySelector("#progress");
   if (progressElement) {
-    //@ts-ignore
+    //@ts-ignore for dataset
     const start = parseInt(progressElement.dataset.current, 10);
+    //@ts-ignore for dataset
     const end = parseInt(progressElement.dataset.end, 10);
     if (start === 1) {
+       //@ts-ignore for style
       progressElement.style.width = `${start / end}%`;
     } else {
+       //@ts-ignore for style
       progressElement.style.width = `${(start / end) * 100}%`;
     }
   }
@@ -79,6 +75,10 @@
     //@ts-ignore
     const url = document.getElementById("zenml-server-connect-input").value;
     vscode.postMessage({ type: "serverConnect", url });
+  }
+
+  function handleConnectToLocalDashboard() {
+    vscode.postMessage({ type: "localServerConnect" });
   }
 
   function handleNext() {
@@ -105,7 +105,4 @@
     vscode.postMessage({ type: "resetSection" });
   }
 
-  function handleNextStep() {
-    vscode.postMessage({ type: "nextStep" });
-  }
 })();

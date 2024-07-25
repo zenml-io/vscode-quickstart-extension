@@ -132,6 +132,7 @@ nav p {
 #zenml-connect input {
   flex-grow: 1;
 }
+
 button#zenml-server-connect {
   width: 100px;
 }

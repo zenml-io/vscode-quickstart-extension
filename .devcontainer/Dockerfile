@@ -12,6 +12,7 @@ RUN apt-get -y install nodejs
 RUN apt-get -y install npm
 
 # Install ZenML
-RUN pip install --no-cache-dir zenml
+# RUN pip install --no-cache-dir zenml
+RUN pip install --no-cache-dir "zenml[server]==0.62.0"
 RUN pip install --no-cache-dir pyarrow 
 RUN zenml integration install sklearn -y

@@ -371,6 +371,10 @@ export default class Quickstart {
           this.sendTerminalCommand(`zenml connect --url "${data.url}"`);
           break;
         }
+        case "localServerConnect": {
+          this.sendTerminalCommand("zenml up");
+          break;
+        }
         case "nextStep": {
           this.currentSection.nextStep();
           this.openSection(this.currentSectionIndex);
