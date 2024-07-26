@@ -15,7 +15,14 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   createSectionBackup(extensionUri);
-  // @ts-ignore
+
+  // close all terminals
+  vscode.window.terminals.forEach((term) => term.dispose());
+
+  // Open the sidebar so toggle will only close it
+  vscode.commands.executeCommand("workbench.view.explorer");
+  vscode.commands.executeCommand("workbench.action.toggleSidebarVisibility");
+
   const quickstart = new Quickstart(quickstartMetadata, context);
 
   // If a user closes the terminal the extension opened we set it
@@ -27,7 +34,6 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     })
   );
-
 }
 
 // This method is called when your extension is deactivated
