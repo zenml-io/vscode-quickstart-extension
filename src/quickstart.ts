@@ -1,12 +1,12 @@
 import * as vscode from "vscode";
 import path from "path";
 import getNonce from "./utils/getNonce";
-import { writeFileSync, readFileSync } from "fs";
-import os from "os";
+import { readFileSync } from "fs";
 import QuickstartSection from "./quickstartSection";
 import { TutorialData } from "./quickstartSection";
 import fileHasBackup from "./utils/fileBackupPath";
 import fileBackupPath from "./utils/fileBackupPath";
+import codeRunner from "./utils/codeRunner";
 
 export default class Quickstart {
   public metadata: TutorialData;
@@ -184,44 +184,25 @@ export default class Quickstart {
         });
       }
 
-      const filePath: string = this.editor.document.uri.fsPath;
-
-      // watcher to automatically run next step when current file runs
-      const { successFilePath, errorFilePath } = this._initializeFileWatcher(
-        filePath,
-        callback
+      codeRunner(
+        this.terminal,
+        this.editor.document.uri,
+        () => {
+          vscode.window.showInformationMessage("Code Ran Successfully! 🎉");
+          if (callback) {
+            callback();
+          }
+          this.openNextStep();
+        },
+        () => {
+          vscode.window.showErrorMessage("Code Run Encountered an Error. ❌");
+        }
       );
-      this._runCode(filePath, successFilePath, errorFilePath);
 
       this.terminal.show(true);
     } catch (error) {
       vscode.window.showErrorMessage(`Failed to execute file: ${error}`);
     }
-  }
-
-  // package code into a bash script so user doesn't see watcher logic
-  private _runCode(
-    filePath: string,
-    successFilePath: string,
-    errorFilePath: string
-  ) {
-    const scriptPath = path.join(os.tmpdir(), "runCode.sh");
-
-    writeFileSync(
-      scriptPath,
-      `
-    clear
-    echo "Executing code..."
-    python "${filePath}"
-    if [ $? -eq 0 ]; then
-      touch "${successFilePath}"
-    else
-      touch "${errorFilePath}"
-    fi
-    `
-    );
-
-    this.sendTerminalCommand(`bash ${scriptPath}`);
   }
 
   // HELPERS
@@ -302,50 +283,6 @@ export default class Quickstart {
     this._panel.onDidDispose(() => {
       this._panel = undefined;
     });
-  }
-
-  // Watcher is created in the same directory as the file being executed
-  // So we're taking in the path to the file being executed and manipulating it
-  // to get the directory
-  private _initializeFileWatcher(path: string, onSuccessCallback?: Function) {
-    const removeLastFileFromPath = (filePath: string) => {
-      let sections = filePath.split("/");
-      sections.pop();
-      return sections.join("/") + "/";
-    };
-
-    const uniqueNumber = getNonce();
-    const successFileName = `runSuccess${uniqueNumber}.txt`;
-    const errorFileName = `runError${uniqueNumber}.txt`;
-
-    const pathWithoutEndFile = removeLastFileFromPath(path);
-    const successFilePath = `${pathWithoutEndFile}${successFileName}`;
-    const errorFilePath = `${pathWithoutEndFile}${errorFileName}`;
-
-    // File System watcher for signal files
-    const watcher = vscode.workspace.createFileSystemWatcher(
-      new vscode.RelativePattern(pathWithoutEndFile, "*.txt")
-    );
-
-    // Logic to run once a signal file is created
-    watcher.onDidCreate((uri) => {
-      if (uri.fsPath.endsWith(successFileName)) {
-        vscode.window.showInformationMessage("Code Ran Successfully! 🎉");
-        if (onSuccessCallback) {
-          onSuccessCallback();
-        }
-        this.openNextStep();
-      } else if (uri.fsPath.endsWith(errorFileName)) {
-        vscode.window.showErrorMessage("Code Run Encountered an Error. ❌");
-      }
-
-      // Delete the signal file and dispose the watcher
-      vscode.workspace.fs.delete(uri);
-      watcher.dispose();
-    });
-
-    // Return paths for both success and error signal files for external use
-    return { successFilePath, errorFilePath };
   }
 
   private _registerView() {
@@ -556,9 +493,9 @@ export default class Quickstart {
         <p>Section ${this.currentSectionIndex + 1} of ${
       this.sections.length
     }</p>
-        <button class="arrow ${latestSection ? "": "secondary"} ${
-          end || !this.currentSection.hasBeenDone() ? "hide" : ""
-        }" id="next"><i class="codicon codicon-chevron-right"></i></button>
+        <button class="arrow ${latestSection ? "" : "secondary"} ${
+      end || !this.currentSection.hasBeenDone() ? "hide" : ""
+    }" id="next"><i class="codicon codicon-chevron-right"></i></button>
       </nav>
     </footer>
     <script nonce="${nonce}" src="${scriptUri}"></script>
