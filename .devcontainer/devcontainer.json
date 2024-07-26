@@ -5,23 +5,17 @@
   "customizations": {
     // Configure properties specific to VS Code.
     "vscode": {
-      // Set *default* container specific settings.json values on container create.
       "settings": {
         "editor.formatOnSave": true,
         "files.insertFinalNewline": true
-        // "terminal.integrated.cwd": "/home/codespace/.vscode-remote/extensions/zenml.zenml-vscode-quickstart-0.0.1/zenml-quickstart"
       },
       // Add the IDs of extensions you want installed when the container is created.
       "extensions": [
         "/workspaces/vscode-quickstart/.devcontainer/extensions/zenml-vscode-quickstart-0.0.1.vsix"
       ]
-    },
-    "codespaces": {
-      "openFiles": ["README.md"]
     }
   },
   "containerEnv": {
     "PYTHONPATH": "/workspaces/vscode-quickstart-extension/zenmlQuickstart/quickstartModules"
-  },
-  "onCreateCommand": "zenml init && zenml stack set default"
+  }
 }
