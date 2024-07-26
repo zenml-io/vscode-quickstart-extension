@@ -477,7 +477,8 @@ export default class Quickstart {
   </head>
   <body>
     <header class="action-buttons">
-      <button class="secondary" id="edit-text">edit text</button>
+      <!-- edit text for development only -->
+      <!-- <button class="secondary" id="edit-text">edit text</button>  -->
       <button class="reset-code secondary ${
         this.codeMatchesBackup ? "hide" : ""
       }"><i class="codicon codicon-history"></i>reset code</button>
