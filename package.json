@@ -15,27 +15,6 @@
     "onStartupFinished"
   ],
   "main": "./out/extension.js",
-  "contributes": {
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "zenml-walkthrough",
-          "title": "ZenMl Walkthrough",
-          "icon": "$(book)"
-        }
-      ]
-    },
-    "views": {
-      "zenml-walkthrough": [
-        {
-          "type": "webview",
-          "id": "zenml.stepsView",
-          "name": "ZenMl"
-        }
-      ]
-    },
-    "commands": []
-  },
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
