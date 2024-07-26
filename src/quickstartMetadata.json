@@ -53,7 +53,8 @@
         },
         {
           "doc": "zenmlQuickstart/sections/featureEngineering/afterRunning1.md",
-          "code": "zenmlQuickstart/sections/featureEngineering/featureEngineering1.py"
+          "code": "zenmlQuickstart/sections/featureEngineering/featureEngineering1.py",
+          "html": "zenmlQuickstart/sections/featureEngineering/runLocalDashboard.html"
         }
       ]
     },
@@ -123,8 +124,7 @@
       "description": "Now that we've produced a few models, we're going to learn how to manage them.",
       "steps": [
         {
-          "doc": "zenmlQuickstart/sections/nextSteps/congratulations.md",
-          "code": "zenmlQuickstart/sections/consumingModel/consumingModel.py"
+          "doc": "zenmlQuickstart/sections/nextSteps/congratulations.md"
         }
       ]
     }

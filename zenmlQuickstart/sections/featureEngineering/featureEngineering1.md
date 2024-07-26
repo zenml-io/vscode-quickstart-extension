@@ -1,4 +1,4 @@
-# 🏔️ Step 3: Feature Engineering
+# Feature Engineering 🧪
 
 We're now at the right point to actually run the pipeline, since we've defined logic for the various steps.
 

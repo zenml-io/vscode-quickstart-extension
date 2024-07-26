@@ -1,36 +1,153 @@
 body {
+  padding: 0;
   background-color: transparent;
 }
-.accordion {
-  /* background-color: #eee; */
-  /* color: #444; */
-  cursor: pointer;
-  padding: 18px;
+
+h1 {
+  margin-bottom: 20px;
+}
+
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin-bottom: 15px;
+}
+
+p,
+ul,
+ol {
+  line-height: 1.3rem;
+  margin-bottom: 10px;
+}
+
+img {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.action-buttons button {
+  display: flex;
+  width: 100px;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+}
+
+header {
+  background-color: var(--vscode-editor-background);
+  position: fixed;
+  top: 0;
   width: 100%;
-  border: none;
-  text-align: left;
-  outline: none;
-  font-size: 15px;
-  transition: 0.4s;
+  margin: 0;
+  padding: 0;
 }
 
-.active,
-.accordion:hover {
-  /* background-color: #ccc; */
-}
-
-.panel {
-  padding: 0 18px;
-  display: none;
-  /* background-color: white; */
-  overflow: hidden;
+main {
+  padding: 75px 40px;
 }
 
 .hide {
-  display: none;
+  display: none !important;
+}
+
+.navigation-buttons {
+  display: flex;
+  flex-direction: column;
 }
 
 footer {
-  position: absolute;
+  position: fixed;
   bottom: 0px;
+  background-color: var(--vscode-editor-background);
+  margin-bottom: 0;
+  width: 100%;
+}
+
+#progress-bar {
+  height: 4px;
+}
+
+#progress {
+  height: 4px;
+  background-color: var(--vscode-progressBar-background);
+}
+
+.arrow {
+  width: 100px;
+  height: 30px;
+}
+
+#next {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  height: 30px;
+}
+
+nav p {
+  flex-grow: 1;
+  text-align: center;
+  margin-bottom: 5px;
+}
+
+.tip {
+  border: 1px solid var(--vscode-button-secondaryHoverBackground);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-bottom: 30px;
+  margin: 40px 20px;
+}
+
+.tip > * {
+  margin-right: 30px;
+  margin-left: 30px;
+}
+
+.tip::before {
+  top: -30px;
+  margin: 0;
+  margin-bottom: 10px;
+  content: "💡 Tip";
+  display: block;
+  padding: 10px;
+  background-color: var(--vscode-button-secondaryBackground);
+  color: var(--vscode-button-secondaryForeground);
+  
+}
+
+#zenml-connect fieldset {
+  border: none;
+  display: flex;
+  padding: 0;
+}
+
+#zenml-connect input {
+  flex-grow: 1;
+  border: 1px solid var(--vscode-input-border);
+}
+
+button#zenml-server-connect {
+  width: 100px;
+}
+
+.tip button {
+  width: auto;
 }

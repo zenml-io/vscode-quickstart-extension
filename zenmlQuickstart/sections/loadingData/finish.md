@@ -1,4 +1,4 @@
-# 🥇 Step 2: Load your data and execute feature engineering
+# Loading Your Data 📬
 
 Everything looks as we'd expect and the values are all in the right format 🥳.
 
