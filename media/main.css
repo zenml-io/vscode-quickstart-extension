@@ -129,7 +129,8 @@ nav p {
   display: block;
   padding: 10px;
   background-color: var(--vscode-button-secondaryBackground);
-  color: var(--vscode-extensionButton-secondaryforeground);
+  color: var(--vscode-button-secondaryForeground);
+  
 }
 
 #zenml-connect fieldset {
