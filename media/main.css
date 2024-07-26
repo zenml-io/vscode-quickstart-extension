@@ -30,19 +30,13 @@ img {
   display: block;
 }
 
-header {
-  position: fixed;
-  top: 0;
-  width: 100%;
-  background-color: var(--vscode-editor-background);
-  margin: 0;
-  padding: 0;
+.action-buttons {
   display: flex;
   gap: 10px;
   justify-content: flex-end;
 }
 
-header button {
+.action-buttons button {
   display: flex;
   width: 100px;
   justify-content: center;
@@ -50,22 +44,34 @@ header button {
   gap: 5px;
 }
 
+header {
+  background-color: var(--vscode-editor-background);
+  position: fixed;
+  top: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 main {
   padding: 75px 40px;
 }
 
 .hide {
-  display: none;
+  display: none !important;
+}
+
+.navigation-buttons {
+  display: flex;
+  flex-direction: column;
 }
 
 footer {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
   position: fixed;
   bottom: 0px;
   background-color: var(--vscode-editor-background);
   margin-bottom: 0;
+  width: 100%;
 }
 
 #progress-bar {
@@ -78,26 +84,29 @@ footer {
 }
 
 .arrow {
-  /* background-color: var(--vscode-button-secondaryBackground); */
-  width: 30px;
+  width: 100px;
+  height: 30px;
 }
 
-/* .arrow:hover {
-  background-color: var(--vscode-button-secondaryHoverBackground);
-} */
+#next {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
 nav {
   display: flex;
   align-items: center;
+  height: 30px;
 }
 
 nav p {
   flex-grow: 1;
   text-align: center;
+  margin-bottom: 5px;
 }
 
 .tip {
-  /* border: 1px solid var(--vscode-button-secondaryForeground); */
   border: 1px solid var(--vscode-button-secondaryHoverBackground);
   padding: 0;
   display: flex;
@@ -120,7 +129,8 @@ nav p {
   display: block;
   padding: 10px;
   background-color: var(--vscode-button-secondaryBackground);
-  color: var(--vscode-extensionButton-foreground);
+  color: var(--vscode-button-secondaryForeground);
+  
 }
 
 #zenml-connect fieldset {
@@ -131,6 +141,7 @@ nav p {
 
 #zenml-connect input {
   flex-grow: 1;
+  border: 1px solid var(--vscode-input-border);
 }
 
 button#zenml-server-connect {

@@ -442,7 +442,14 @@ export default class Quickstart {
       this.currentSectionIndex === this.sections.length - 1 &&
       this.currentSection.isDone();
     const latestSection = this.currentSectionIndex === this._latestSectionIdx;
-
+    let nextArrow;
+    if (end || !this.currentSection.hasBeenDone()) {
+      nextArrow = `<button class="arrow hide" id="next"><i class="codicon codicon-chevron-right"></i></button>`;
+    } else if (latestSection) {
+      nextArrow = `<button class="arrow" id="next">Next<i class="codicon codicon-chevron-right"></i></button>`;
+    } else {
+      nextArrow = `<button class="arrow secondary" id="next"><i class="codicon codicon-chevron-right"></i></button>`;
+    }
     return /*html*/ `
   <!DOCTYPE html>
   <html lang="en">
@@ -469,8 +476,9 @@ export default class Quickstart {
     <title>Quickstart Guide</title>
   </head>
   <body>
-    <header>
-      <button class="secondary" id="edit-text">edit text</button>
+    <header class="action-buttons">
+      <!-- edit text for development only -->
+      <!-- <button class="secondary" id="edit-text">edit text</button>  -->
       <button class="reset-code secondary ${
         this.codeMatchesBackup ? "hide" : ""
       }"><i class="codicon codicon-history"></i>reset code</button>
@@ -480,12 +488,12 @@ export default class Quickstart {
       ${docContent}
       ${this.currentSection.html()}
     </main>
-    <footer>  
-      <div id="progress-bar">
+    <footer class="navigation-buttons"> 
+     <div id="progress-bar">
         <div id="progress" data-current="${
           this.currentSectionIndex + 1
         }" data-end="${this.sections.length}"></div>
-      </div>
+        </div>
       <nav>
         <button class="arrow secondary ${
           beginning ? "hide" : ""
@@ -493,10 +501,8 @@ export default class Quickstart {
         <p>Section ${this.currentSectionIndex + 1} of ${
       this.sections.length
     }</p>
-        <button class="arrow ${latestSection ? "" : "secondary"} ${
-      end || !this.currentSection.hasBeenDone() ? "hide" : ""
-    }" id="next"><i class="codicon codicon-chevron-right"></i></button>
-      </nav>
+          ${nextArrow}
+      </nav> 
     </footer>
     <script nonce="${nonce}" src="${scriptUri}"></script>
   </body>
