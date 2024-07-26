@@ -19,6 +19,7 @@ export default class Quickstart {
   public currentSection: QuickstartSection;
   public codeMatchesBackup: boolean = true;
   private _terminal: vscode.Terminal | undefined;
+  private _latestSectionIdx = 0;
 
   constructor(metadata: TutorialData, context: vscode.ExtensionContext) {
     this.metadata = metadata;
@@ -104,9 +105,22 @@ export default class Quickstart {
     }
   }
 
+  async back() {
+    if (this.currentSection.currentStep === 0) {
+      this.openSection(--this.currentSectionIndex);
+    } else {
+      this.currentSection.previousStep();
+      this.openSection(this.currentSectionIndex);
+    }
+  }
   // Doc Panel
   async openSection(sectionId: number) {
     this._setSection(sectionId);
+
+    if (sectionId > this._latestSectionIdx) {
+      this._latestSectionIdx = sectionId;
+    }
+
     const openCode = this.currentSection.code();
 
     if (!openCode) {
@@ -142,7 +156,7 @@ export default class Quickstart {
 
   // Terminal
   public closeTerminal() {
-    this._terminal?.hide();
+    this.terminal?.hide();
   }
 
   sendTerminalCommand(command: string) {
@@ -250,6 +264,18 @@ export default class Quickstart {
     }
   }
 
+  async openEditPanel(codePath: string) {
+    const onDiskPath = path.join(this.context.extensionPath, codePath);
+    const filePath = vscode.Uri.file(onDiskPath);
+    try {
+      const document = await vscode.workspace.openTextDocument(filePath);
+      this.currentlyDisplayingDocument = document;
+      await vscode.window.showTextDocument(document, vscode.ViewColumn.Two);
+    } catch (error) {
+      vscode.window.showErrorMessage(`Failed to open file: ${error}`);
+    }
+  }
+
   // PRIVATE METHODS:
 
   private _setSection(index: number) {
@@ -302,10 +328,10 @@ export default class Quickstart {
     watcher.onDidCreate((uri) => {
       if (uri.fsPath.endsWith(successFileName)) {
         vscode.window.showInformationMessage("Code Ran Successfully! 🎉");
-        this.openNextStep();
         if (onSuccessCallback) {
           onSuccessCallback();
         }
+        this.openNextStep();
       } else if (uri.fsPath.endsWith(errorFileName)) {
         vscode.window.showErrorMessage("Code Run Encountered an Error. ❌");
       }
@@ -333,18 +359,20 @@ export default class Quickstart {
           break;
         }
         case "runCodeFile": {
-          console.log("Code File");
           await this.runCode();
           break;
         }
-        case "resetSection": {
-          this.currentSection.reset();
-          this.openSection(this.currentSectionIndex);
-          this.closeTerminal();
+        // for dev only
+        case "editText": {
+          this.openEditPanel(this.currentSection.doc());
           break;
         }
         case "serverConnect": {
           this.sendTerminalCommand(`zenml connect --url "${data.url}"`);
+          break;
+        }
+        case "localServerConnect": {
+          this.sendTerminalCommand("zenml up");
           break;
         }
         case "nextStep": {
@@ -352,8 +380,22 @@ export default class Quickstart {
           this.openSection(this.currentSectionIndex);
           break;
         }
+        case "next": {
+          if (this.currentSection.isDone()) {
+            this.openSection(this.currentSectionIndex + 1);
+            this.closeTerminal();
+          } else {
+            this.currentSection.nextStep();
+            this.openSection(this.currentSectionIndex);
+          }
+          break;
+        }
         case "resetCodeFile": {
           this.resetCode();
+          break;
+        }
+        case "previous": {
+          this.back();
           break;
         }
       }
@@ -440,15 +482,33 @@ export default class Quickstart {
       vscode.Uri.joinPath(this.context.extensionUri, "media", "main.css")
     );
 
+    const codiconsUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(
+        this.context.extensionUri,
+        "node_modules",
+        "@vscode/codicons",
+        "dist",
+        "codicon.css"
+      )
+    );
+
     // Use a nonce to only allow a specific script to be run.
     const nonce = getNonce();
+
+    // for showing / hiding nav buttons
+    const beginning =
+      this.currentSectionIndex === 0 && this.currentSection.currentStep === 0;
+    const end =
+      this.currentSectionIndex === this.sections.length - 1 &&
+      this.currentSection.isDone();
+    const latestSection = this.currentSectionIndex === this._latestSectionIdx;
 
     return /*html*/ `
   <!DOCTYPE html>
   <html lang="en">
   <head>
     <meta charset="UTF-8">
-  
+
     <!--
       Use a content security policy to only allow loading styles from our extension directory,
       and only allow scripts that have a specific nonce.
@@ -456,29 +516,47 @@ export default class Quickstart {
     -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${
       webview.cspSource
-    }; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
+    }; style-src ${webview.cspSource}; font-src ${
+      webview.cspSource
+    }; script-src 'nonce-${nonce}';">
   
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="${styleResetUri}" rel="stylesheet">
     <link href="${styleVSCodeUri}" rel="stylesheet">
     <link href="${styleMainUri}" rel="stylesheet">
+    <link href="${codiconsUri}" rel="stylesheet" />
   
     <title>Quickstart Guide</title>
   </head>
-  
   <body>
-    ${docContent}
-    ${this.currentSection.html()}
-    <button class="run-code">Execute Current Code</button>
-    <button class="reset-section">Reset Section</button>
-    <button class="next-step ${
-      this.currentSection.isDone() ? "hide" : ""
-    }" >Next Step</button>
-    <button class="next-section ${
-      this.currentSection.isDone() ? "" : "hide"
-    }" data-id="${this.currentSectionIndex + 1}">Go to next section</button>
+    <header>
+      <button class="secondary" id="edit-text">edit text</button>
+      <button class="reset-code secondary ${
+        this.codeMatchesBackup ? "hide" : ""
+      }"><i class="codicon codicon-history"></i>reset code</button>
+      <button class="run-code"><i class="codicon codicon-play"></i>run code</button>
+    </header>
+    <main>
+      ${docContent}
+      ${this.currentSection.html()}
+    </main>
     <footer>  
-      <p>Section ${this.currentSectionIndex + 1} of ${this.sections.length}</p>
+      <div id="progress-bar">
+        <div id="progress" data-current="${
+          this.currentSectionIndex + 1
+        }" data-end="${this.sections.length}"></div>
+      </div>
+      <nav>
+        <button class="arrow secondary ${
+          beginning ? "hide" : ""
+        }" id="previous"><i class="codicon codicon-chevron-left"></i></button>
+        <p>Section ${this.currentSectionIndex + 1} of ${
+      this.sections.length
+    }</p>
+        <button class="arrow ${latestSection ? "": "secondary"} ${
+          end || !this.currentSection.hasBeenDone() ? "hide" : ""
+        }" id="next"><i class="codicon codicon-chevron-right"></i></button>
+      </nav>
     </footer>
     <script nonce="${nonce}" src="${scriptUri}"></script>
   </body>

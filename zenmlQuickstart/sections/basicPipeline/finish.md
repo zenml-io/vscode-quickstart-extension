@@ -1,4 +1,4 @@
-# 🏔️ Step 1: Connect to ZenML Cloud
+# A Basic Pipeline 🌱
 
 Nice! You just ran your first ZenML pipeline.
 

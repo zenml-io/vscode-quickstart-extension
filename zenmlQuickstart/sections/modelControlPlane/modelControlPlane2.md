@@ -1,4 +1,5 @@
-# 🏔️ Step 6: Use the Model Control Plane
+# Using the Model Control Plane 👷‍♂️
+
 This time, running both pipelines has created two associated **model versions**.
 
 The interesting part is that ZenML went ahead and linked all artifacts produced by the

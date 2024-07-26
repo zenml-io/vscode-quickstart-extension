@@ -53,7 +53,8 @@
         },
         {
           "doc": "zenmlQuickstart/sections/featureEngineering/afterRunning1.md",
-          "code": "zenmlQuickstart/sections/featureEngineering/featureEngineering1.py"
+          "code": "zenmlQuickstart/sections/featureEngineering/featureEngineering1.py",
+          "html": "zenmlQuickstart/sections/featureEngineering/runLocalDashboard.html"
         }
       ]
     },
