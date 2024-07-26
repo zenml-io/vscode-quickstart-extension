@@ -27,6 +27,7 @@ export default class QuickstartSection {
   public currentStep: number;
   private _steps: SectionStep[];
   private _done = false;
+  private _hasBeenDone = false;
 
   constructor(section: Section, context: vscode.ExtensionContext) {
     this.context = context;
@@ -35,6 +36,9 @@ export default class QuickstartSection {
     this._steps = section.steps;
     this._convertStepMarkdown();
     this.currentStep = 0;
+    if (this.currentStep === this._steps.length - 1) {
+      this._done = true;
+    }
     return this;
   }
 
@@ -44,6 +48,14 @@ export default class QuickstartSection {
     }
     if (this.currentStep >= this._steps.length - 1) {
       this._done = true;
+      this._hasBeenDone = true;
+    }
+  }
+
+  previousStep() {
+    if (this.currentStep - 1 >= 0) {
+      this.currentStep--;
+      this._done = false;
     }
   }
 
@@ -81,6 +93,10 @@ export default class QuickstartSection {
 
   isDone() {
     return this._done;
+  }
+
+  hasBeenDone() {
+    return this._hasBeenDone;
   }
 
   private _convertStepMarkdown() {

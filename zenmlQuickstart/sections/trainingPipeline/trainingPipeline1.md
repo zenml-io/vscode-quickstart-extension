@@ -1,15 +1,15 @@
-# 🏔️ Step 5: Training Pipelines
+# Training Pipelines ⌚
 
 Now that we have our data it makes sense to train some models to get a sense of
-how difficult the task is. The Breast Cancer dataset is sufficiently large and complex 
-that it's unlikely we'll be able to train a model that behaves perfectly since the problem 
+how difficult the task is. The Breast Cancer dataset is sufficiently large and complex
+that it's unlikely we'll be able to train a model that behaves perfectly since the problem
 is inherently complex, but we can get a sense of what a reasonable baseline looks like.
 
 We'll start with two simple models, a SGD Classifier and a Random Forest
 Classifier, both batteries-included from `sklearn`. We'll train them both on the
 same data and then compare their performance.
 
-<img src="/zenmlQuickstart/assets/training_pipeline.png" width="50%" alt="Training pipeline">
+<img src="/zenmlQuickstart/assets/training_pipeline.png" width="75%" alt="Training pipeline">
 
 Our two training steps both return different kinds of `sklearn` classifier
 models, so we use the generic `ClassifierMixin` type hint for the return type.
