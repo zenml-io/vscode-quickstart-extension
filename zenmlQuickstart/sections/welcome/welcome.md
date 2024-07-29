@@ -1,6 +1,6 @@
 # Welcome to the ZenML Quickstart Guide 👋
 
-This vscode extension running in codespaces gives you a sandboxed place to explore using ZenML.
+This VSCode extension running in Codespaces (or locally using a Dev Container!) gives you a sandboxed place to explore using ZenML.
 
 This repository is a minimalistic MLOps project intended as a starting point to learn how to put ML workflows in production. It features:
 
@@ -8,7 +8,7 @@ This repository is a minimalistic MLOps project intended as a starting point to 
 - A training pipeline that loads the preprocessed dataset and trains a model.
 - A batch inference pipeline that runs predictions on the trained model with new data.
 
-Follow along this notebook to understand how you can use ZenML to productionalize your ML workflows!
+Follow along by clicking the 'Run code' and 'Next' buttons as appropriate to understand how you can use ZenML to productionalize your ML workflows!
 
 ![Pipeline Overview](/zenmlQuickstart/assets/pipeline_overview.png)
 
