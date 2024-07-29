@@ -1,6 +1,6 @@
 # Using the Model Control Plane 👷‍♂️
 
-If you are a [ZenML Cloud](https://zenml.io/cloud) user, you can see all of this visualized in the dashboard:
+If you are a [ZenML Pro](https://zenml.io/pro) user, you can see all of this visualized in the dashboard:
 
 <img src="/zenmlQuickstart/assets/cloud_mcp_screenshot.png" width="70%" alt="Model Control Plane">
 

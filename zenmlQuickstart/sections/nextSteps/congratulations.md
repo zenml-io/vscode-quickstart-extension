@@ -18,4 +18,4 @@ about the capabilities of ZenML. For example, you might want to:
 ## What next?
 
 * If you have questions or feedback... join our [**Slack Community**](https://zenml.io/slack) and become part of the ZenML family!
-* If you want to quickly get started with ZenML, check out the [ZenML Cloud](https://zenml.io/cloud).
+* If you want to quickly get started with ZenML, check out [ZenML Pro](https://zenml.io/pro).
