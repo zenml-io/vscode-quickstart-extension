@@ -1,10 +1,8 @@
 import { cp } from "node:fs/promises";
-import * as vscode from "vscode";
 
-export default async function createSectionBackup(quickstartUri: vscode.Uri) {
-  const quickstartPath = quickstartUri.fsPath;
+export default async function createSectionBackup(quickstartPath: string) {
   try {
-    await cp(`${quickstartPath}/sections`, `${quickstartPath}/sectionsBackup`, {
+    await cp(`${quickstartPath}/zenmlQuickstart/sections`, `${quickstartPath}/zenmlQuickstart/sectionsBackup`, {
       recursive: true,
       force: false,
     });

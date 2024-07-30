@@ -5,16 +5,16 @@ import quickstartMetadata from "./quickstartMetadata.json";
 import Quickstart from "./quickstart";
 import setDirectory from "./utils/setExtensionDirectory";
 import createSectionBackup from "./utils/createSectionBackup";
-import getExtensionUri from "./utils/getExtensionUri";
+import getExtensionPath from "./utils/getDevContainerPath";
 
 export async function activate(context: vscode.ExtensionContext) {
-  const extensionUri = getExtensionUri(context);
-  // Only set the directory if running in devcontainer
-  if (vscode.env.remoteName) {
-    setDirectory(extensionUri);
-  }
+  const extensionPath = getExtensionPath(context);
+  // Only set the directory if running locally
+  // if (!vscode.env.remoteName) {
+  //   setDirectory(extensionPath);
+  // }
 
-  createSectionBackup(extensionUri);
+  createSectionBackup(extensionPath);
 
   // close all terminals
   vscode.window.terminals.forEach((term) => term.dispose());

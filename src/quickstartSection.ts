@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { readFileSync } from "fs";
 import generateHTMLfromMD from "./utils/generateHTMLfromMD";
 import path from "path";
+import getDevContainerPath from "./utils/getDevContainerPath";
 
 export interface TutorialData {
   sections: Section[];
@@ -77,7 +78,7 @@ export default class QuickstartSection {
     const file = this._steps[this.currentStep].html;
 
     if (file) {
-      const htmlPath = path.join(this.context.extensionPath, file);
+      const htmlPath = path.join(getDevContainerPath(this.context), file);
       const htmlContent = readFileSync(htmlPath, { encoding: "utf-8" });
 
       return htmlContent;
@@ -101,7 +102,10 @@ export default class QuickstartSection {
 
   private _convertStepMarkdown() {
     this._steps.forEach((step) => {
-      const tutorialPath = path.join(this.context.extensionPath, step.doc);
+      const tutorialPath = path.join(
+        getDevContainerPath(this.context),
+        step.doc
+      );
       step.docHTML = generateHTMLfromMD(tutorialPath);
     });
   }

@@ -7,6 +7,7 @@ import { TutorialData } from "./quickstartSection";
 import fileHasBackup from "./utils/fileBackupPath";
 import fileBackupPath from "./utils/fileBackupPath";
 import codeRunner from "./utils/codeRunner";
+import getDevContainerPath from "./utils/getDevContainerPath";
 
 export default class Quickstart {
   public metadata: TutorialData;
@@ -217,8 +218,8 @@ export default class Quickstart {
     docContent = docContent.replace(
       /<img\s+[^>]*src="([^"]*)"[^>]*>/g,
       (match, originalSrc) => {
-        const onDiskPath = vscode.Uri.joinPath(
-          this.context.extensionUri,
+        const onDiskPath = vscode.Uri.file(
+          getDevContainerPath(this.context) + 
           originalSrc
         );
         const newSrc = this._panel?.webview.asWebviewUri(onDiskPath);
@@ -234,7 +235,7 @@ export default class Quickstart {
   }
 
   async openCodePanel(codePath: string) {
-    const onDiskPath = path.join(this.context.extensionPath, codePath);
+    const onDiskPath = path.join(getDevContainerPath(this.context), codePath);
     const filePath = vscode.Uri.file(onDiskPath);
     try {
       const document = await vscode.workspace.openTextDocument(filePath);
@@ -406,6 +407,7 @@ export default class Quickstart {
 
   private _generateHTML(docContent: string) {
     const webview = this.panel.webview;
+    const devContainerPath = getDevContainerPath(this.context)
 
     // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
     const scriptUri = webview.asWebviewUri(

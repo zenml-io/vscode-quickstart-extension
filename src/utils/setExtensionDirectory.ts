@@ -1,9 +1,10 @@
 import * as vscode from "vscode";
 
-export default async function setDirectory(quickStartUri: vscode.Uri) {
-  const targetUri = quickStartUri.with({
-    path: `${quickStartUri.fsPath}/sections`,
-  });
+export default async function setDirectory(devContainerPath: string) {
+  const targetUri = vscode.Uri.file(devContainerPath + "/zenmlQuickstart/sections")
+  // const targetUri = quickStartUri.with({
+  //   path: `${quickStartUri.fsPath}/sections`,
+  // });
 
   const currentWorkspace = vscode.workspace.workspaceFolders;
 
