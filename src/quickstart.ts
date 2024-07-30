@@ -79,7 +79,7 @@ export default class Quickstart {
       return;
     }
 
-    //replace the path to point to the backup
+    // Grab backup content path for current document to replace active document's content)
     const backupPath = doc.uri.fsPath.replace("sections", "sectionsBackup");
 
     //get the text from the backup
@@ -514,3 +514,4 @@ export default class Quickstart {
     </html>`;
   }
 }
+
