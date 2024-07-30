@@ -1,3 +1,4 @@
+from rich import print
 from zenml import Model
 from zenml.client import Client
 from pipelines import training

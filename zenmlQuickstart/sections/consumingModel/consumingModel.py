@@ -47,25 +47,26 @@ def inference(preprocess_pipeline_id: UUID):
         dataset_inf=df_inference,
     )
 
-pipeline_settings = {"enable_cache": False}
+if __name__ == "__main__":    
+    pipeline_settings = {"enable_cache": False}
 
-# Lets add some metadata to the model to make it identifiable
-pipeline_settings["model"] = Model(
-    name="breast_cancer_classifier",
-    version="production", # We can pass in the stage name here!
-    license="Apache 2.0",
-    description="A breast cancer classifier",
-    tags=["breast_cancer", "classifier"],
-)
+    # Lets add some metadata to the model to make it identifiable
+    pipeline_settings["model"] = Model(
+        name="breast_cancer_classifier",
+        version="production", # We can pass in the stage name here!
+        license="Apache 2.0",
+        description="A breast cancer classifier",
+        tags=["breast_cancer", "classifier"],
+    )
 
-# the `with_options` method allows us to pass in pipeline settings
-#  and returns a configured pipeline
-inference_configured = inference.with_options(**pipeline_settings)
+    # the `with_options` method allows us to pass in pipeline settings
+    #  and returns a configured pipeline
+    inference_configured = inference.with_options(**pipeline_settings)
 
-# Let's run it again to make sure we have two versions
-# We need to pass in the ID of the preprocessing done in the feature engineering pipeline
-# in order to avoid training-serving skew
+    # Let's run it again to make sure we have two versions
+    # We need to pass in the ID of the preprocessing done in the feature engineering pipeline
+    # in order to avoid training-serving skew
 
-inference_configured(
-    preprocess_pipeline_id=preprocessing_pipeline_artifact_version.id
-)
+    inference_configured(
+        preprocess_pipeline_id=preprocessing_pipeline_artifact_version.id
+    )
