@@ -219,8 +219,7 @@ export default class Quickstart {
       /<img\s+[^>]*src="([^"]*)"[^>]*>/g,
       (match, originalSrc) => {
         const onDiskPath = vscode.Uri.file(
-          getDevContainerPath(this.context) + 
-          originalSrc
+          getDevContainerPath(this.context) + originalSrc
         );
         const newSrc = this._panel?.webview.asWebviewUri(onDiskPath);
         return match.replace(/src="[^"]*"/, `src="${newSrc}"`);
@@ -289,7 +288,10 @@ export default class Quickstart {
   private _registerView() {
     this.panel.webview.options = {
       enableScripts: true,
-      localResourceRoots: [this.context.extensionUri],
+      localResourceRoots: [
+        vscode.Uri.file(getDevContainerPath(this.context)),
+        this.context.extensionUri,
+      ],
     };
 
     this.panel.webview.onDidReceiveMessage(async (data) => {
@@ -407,7 +409,7 @@ export default class Quickstart {
 
   private _generateHTML(docContent: string) {
     const webview = this.panel.webview;
-    const devContainerPath = getDevContainerPath(this.context)
+    const devContainerPath = getDevContainerPath(this.context);
 
     // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
     const scriptUri = webview.asWebviewUri(

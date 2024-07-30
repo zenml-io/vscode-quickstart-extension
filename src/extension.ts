@@ -9,6 +9,7 @@ import getExtensionPath from "./utils/getDevContainerPath";
 
 export async function activate(context: vscode.ExtensionContext) {
   const extensionPath = getExtensionPath(context);
+  console.log("HELLO THIS IS HERE", extensionPath);
   // Only set the directory if running locally
   // if (!vscode.env.remoteName) {
   //   setDirectory(extensionPath);
