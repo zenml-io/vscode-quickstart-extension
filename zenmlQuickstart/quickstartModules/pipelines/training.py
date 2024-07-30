@@ -60,16 +60,10 @@ def training(
         dataset_trn, dataset_tst = feature_engineering()
     else:
         client = Client()
-        dataset_trn = client.get_artifact_version(
-            name_id_or_prefix=train_dataset_id
-        )
-        dataset_tst = client.get_artifact_version(
-            name_id_or_prefix=test_dataset_id
-        )
+        dataset_trn = client.get_artifact_version(name_id_or_prefix=train_dataset_id)
+        dataset_tst = client.get_artifact_version(name_id_or_prefix=test_dataset_id)
 
-    model = model_trainer(
-        dataset_trn=dataset_trn, target=target, model_type=model_type
-    )
+    model = model_trainer(dataset_trn=dataset_trn, target=target, model_type=model_type)
 
     acc = model_evaluator(
         model=model,

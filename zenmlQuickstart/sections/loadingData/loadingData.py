@@ -12,10 +12,11 @@ logger = get_logger(__name__)
 # Initialize the ZenML client to fetch objects from the ZenML Server
 client = Client()
 
+
 @step
 def data_loader_simplified(
     random_state: int, is_inference: bool = False, target: str = "target"
-) -> Annotated[pd.DataFrame, "dataset"]:  # We name the dataset 
+) -> Annotated[pd.DataFrame, "dataset"]:  # We name the dataset
     """Dataset reader step."""
     dataset = load_breast_cancer(as_frame=True)
     inference_size = int(len(dataset.target) * 0.05)
@@ -29,6 +30,7 @@ def data_loader_simplified(
     dataset.reset_index(drop=True, inplace=True)
     logger.info(f"Dataset with {len(dataset)} records loaded!")
     return dataset
+
 
 df = data_loader_simplified(random_state=42)
 print(df.head())

@@ -28,7 +28,7 @@ training_configured = training.with_options(**pipeline_settings)
 training_configured(
     model_type="sgd",
     train_dataset_id=dataset_trn_artifact_version.id,
-    test_dataset_id=dataset_tst_artifact_version.id
+    test_dataset_id=dataset_tst_artifact_version.id,
 )
 
 # Let's train the RF model and set the version name to "rf"
@@ -42,5 +42,5 @@ training_configured = training.with_options(**pipeline_settings)
 training_configured(
     model_type="rf",
     train_dataset_id=dataset_trn_artifact_version.id,
-    test_dataset_id=dataset_tst_artifact_version.id
+    test_dataset_id=dataset_tst_artifact_version.id,
 )

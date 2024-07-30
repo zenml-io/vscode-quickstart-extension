@@ -5,13 +5,10 @@ from typing import Optional, List
 
 from zenml import pipeline
 
-from steps import (
-    data_loader,
-    data_preprocessor,
-    data_splitter
-)
+from steps import data_loader, data_preprocessor, data_splitter
 
 client = Client()
+
 
 @pipeline
 def feature_engineering(
@@ -20,7 +17,7 @@ def feature_engineering(
     normalize: Optional[bool] = None,
     drop_columns: Optional[List[str]] = None,
     target: Optional[str] = "target",
-    random_state: int = 17
+    random_state: int = 17,
 ):
     """Feature engineering pipeline."""
     # Link all the steps together by calling them and passing the output
@@ -39,5 +36,6 @@ def feature_engineering(
         target=target,
         random_state=random_state,
     )
+
 
 feature_engineering(test_size=0.25)

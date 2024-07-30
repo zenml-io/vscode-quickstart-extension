@@ -11,17 +11,20 @@ from zenml import ArtifactConfig, step, pipeline
 from zenml.logger import get_logger
 from zenml.client import Client
 
-from pipelines import feature_engineering 
+from pipelines import feature_engineering
 from steps import model_evaluator
 
 logger = get_logger(__name__)
 client = Client()
 
+
 @step
 def model_trainer(
     dataset_trn: pd.DataFrame,
     model_type: str = "sgd",
-) -> Annotated[ClassifierMixin, ArtifactConfig(name="sklearn_classifier", is_model_artifact=True)]:
+) -> Annotated[
+    ClassifierMixin, ArtifactConfig(name="sklearn_classifier", is_model_artifact=True)
+]:
     """Configure and train a model on the training dataset."""
     target = "target"
     if model_type == "sgd":
@@ -29,7 +32,7 @@ def model_trainer(
     elif model_type == "rf":
         model = RandomForestClassifier()
     else:
-        raise ValueError(f"Unknown model type {model_type}")   
+        raise ValueError(f"Unknown model type {model_type}")
 
     logger.info(f"Training model {model}...")
 
@@ -38,6 +41,7 @@ def model_trainer(
         dataset_trn[target],
     )
     return model
+
 
 @pipeline
 def training(
@@ -49,13 +53,17 @@ def training(
 ):
     """Model training pipeline."""
     if train_dataset_id is None or test_dataset_id is None:
-        # If we dont pass the IDs, this will run the feature engineering pipeline   
+        # If we dont pass the IDs, this will run the feature engineering pipeline
         dataset_trn, dataset_tst = feature_engineering()
     else:
         # Load the datasets from an older pipeline
-        dataset_trn = client.get_artifact_version(name_id_or_prefix=train_dataset_id).load()
-        dataset_tst = client.get_artifact_version(name_id_or_prefix=test_dataset_id).load()
-    
+        dataset_trn = client.get_artifact_version(
+            name_id_or_prefix=train_dataset_id
+        ).load()
+        dataset_tst = client.get_artifact_version(
+            name_id_or_prefix=test_dataset_id
+        ).load()
+
     trained_model = model_trainer(
         dataset_trn=dataset_trn,
         model_type=model_type,
@@ -69,6 +77,7 @@ def training(
         min_test_accuracy=min_test_accuracy,
     )
 
+
 if __name__ == "__main__":
     dataset_trn_artifact_version = client.get_artifact_version("dataset_trn")
     dataset_tst_artifact_version = client.get_artifact_version("dataset_tst")
@@ -78,7 +87,7 @@ if __name__ == "__main__":
     training(
         model_type="rf",
         train_dataset_id=dataset_trn_artifact_version.id,
-        test_dataset_id=dataset_tst_artifact_version.id
+        test_dataset_id=dataset_tst_artifact_version.id,
     )
 
     rf_run = client.get_pipeline("training").last_run
@@ -87,7 +96,7 @@ if __name__ == "__main__":
     sgd_run = training(
         model_type="sgd",
         train_dataset_id=dataset_trn_artifact_version.id,
-        test_dataset_id=dataset_tst_artifact_version.id
+        test_dataset_id=dataset_tst_artifact_version.id,
     )
 
     sgd_run = client.get_pipeline("training").last_run

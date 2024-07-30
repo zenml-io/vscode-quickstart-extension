@@ -52,9 +52,7 @@ def data_loader(
     dataset = load_breast_cancer(as_frame=True)
     inference_size = int(len(dataset.target) * 0.05)
     dataset: pd.DataFrame = dataset.frame
-    inference_subset = dataset.sample(
-        inference_size, random_state=random_state
-    )
+    inference_subset = dataset.sample(inference_size, random_state=random_state)
     if is_inference:
         dataset = inference_subset
         dataset.drop(columns=target, inplace=True)

@@ -4,13 +4,13 @@ from zenml import step, pipeline, Model, get_step_context
 from zenml.client import Client
 from uuid import UUID
 from zenml import pipeline
-from steps import (
-    data_loader,
-    inference_preprocessor
-)
+from steps import data_loader, inference_preprocessor
 
 client = Client()
-preprocessing_pipeline_artifact_version = client.get_artifact_version("preprocess_pipeline")
+preprocessing_pipeline_artifact_version = client.get_artifact_version(
+    "preprocess_pipeline"
+)
+
 
 @step
 def inference_predict(dataset_inf: pd.DataFrame) -> Annotated[pd.Series, "predictions"]:
@@ -26,6 +26,7 @@ def inference_predict(dataset_inf: pd.DataFrame) -> Annotated[pd.Series, "predic
 
     return predictions
 
+
 @pipeline
 def inference(preprocess_pipeline_id: UUID):
     """Model batch inference pipeline"""
@@ -34,26 +35,27 @@ def inference(preprocess_pipeline_id: UUID):
     random_state = 42
     target = "target"
 
-    df_inference = data_loader(
-        random_state=random_state, is_inference=True
-    )
+    df_inference = data_loader(random_state=random_state, is_inference=True)
     df_inference = inference_preprocessor(
         dataset_inf=df_inference,
         # We use the preprocess pipeline from the feature engineering pipeline
-        preprocess_pipeline=client.get_artifact_version(name_id_or_prefix=preprocess_pipeline_id),
+        preprocess_pipeline=client.get_artifact_version(
+            name_id_or_prefix=preprocess_pipeline_id
+        ),
         target=target,
     )
     inference_predict(
         dataset_inf=df_inference,
     )
 
-if __name__ == "__main__":    
+
+if __name__ == "__main__":
     pipeline_settings = {"enable_cache": False}
 
     # Lets add some metadata to the model to make it identifiable
     pipeline_settings["model"] = Model(
         name="breast_cancer_classifier",
-        version="production", # We can pass in the stage name here!
+        version="production",  # We can pass in the stage name here!
         license="Apache 2.0",
         description="A breast cancer classifier",
         tags=["breast_cancer", "classifier"],
