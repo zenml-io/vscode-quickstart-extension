@@ -1,12 +1,8 @@
 # Feature Engineering 🧪
 
-We're now at the right point to actually run the pipeline, since we've defined logic for the various steps.
+Here's a pipeline that brings together several steps (`data_loader`, `data_preprocessor`, and `data_splitter`). As you can see, this pipeline is just another function that has the `@pipeline` decorator added. This specific pipeline doesn't return a value, but that option is available to you if you need.
 
-<div class="tip">
-  <p>
-    Remember, creating a pipeline is as simple as adding a `@pipeline` decorator to a function. This specific pipeline doesn't return a value, but that option is available to you if you need.
-</p>
-</div>
+Click the `run code` button above to run the pipeline.
 
 <div class="tip">
   <p>

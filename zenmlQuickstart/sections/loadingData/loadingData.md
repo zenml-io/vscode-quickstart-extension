@@ -27,7 +27,9 @@ You'll also notice that we have included type hints for the outputs
 to the function. These are not only useful for anyone reading your code, but
 help ZenML process your data in a way appropriate to the specific data types.
 
-ZenML is built in a way that allows you to experiment with your data and build
+<div class="tip">
+<p>ZenML is built in a way that allows you to experiment with your data and build
 your pipelines as you work, so if you want to call this function to see how it
-works, you can just call it directly. Here we take a look at the first few rows
-of your training dataset.
+works, you can just call it directly. On <code>line 34</code> we take advantage of this to have a look at the first few rows of our training dataset.
+</p>
+</div>
