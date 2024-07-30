@@ -33,7 +33,7 @@ export default class Quickstart {
     this.currentSection = this.sections[0];
     vscode.window
       .createTerminal({ hideFromUser: true })
-      .sendText("zenml init && zenml stack set default");
+      .sendText("zenml init --path /workspaces && zenml stack set default");
     this.openSection(0);
   }
 
@@ -273,8 +273,8 @@ export default class Quickstart {
 
   private _initializePanel() {
     this._panel = vscode.window.createWebviewPanel(
-      "zenml.markdown", // used internally - I think an identifier
-      "Zenml", // displayed to user
+      "zenml.markdown",
+      "Zenml",
       vscode.ViewColumn.One,
       {}
     );
