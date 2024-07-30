@@ -1,4 +1,3 @@
-# Do the imports at the top
 from typing_extensions import Annotated
 from sklearn.datasets import load_breast_cancer
 

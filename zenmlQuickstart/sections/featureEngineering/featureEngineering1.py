@@ -11,9 +11,8 @@ from steps import (
     data_splitter
 )
 
-# Initialize the ZenML client to fetch objects from the ZenML Server
 client = Client()
-# as in Notion Doc
+
 @pipeline
 def feature_engineering(
     test_size: float = 0.3,
