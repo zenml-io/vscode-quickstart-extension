@@ -20,8 +20,7 @@
       "steps": [
         {
           "doc": "zenmlQuickstart/sections/basicPipeline/connectToZenmlCloud.md",
-          "code": "zenmlQuickstart/sections/basicPipeline/code2.py",
-          "html": "zenmlQuickstart/sections/basicPipeline/connectToZenmlCloud.html"
+          "code": "zenmlQuickstart/sections/basicPipeline/code2.py"
         },
         {
           "doc": "zenmlQuickstart/sections/basicPipeline/finish.md",
@@ -53,8 +52,7 @@
         },
         {
           "doc": "zenmlQuickstart/sections/featureEngineering/afterRunning1.md",
-          "code": "zenmlQuickstart/sections/featureEngineering/featureEngineering1.py",
-          "html": "zenmlQuickstart/sections/featureEngineering/runLocalDashboard.html"
+          "code": "zenmlQuickstart/sections/featureEngineering/featureEngineering1.py"
         }
       ]
     },
