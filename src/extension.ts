@@ -24,9 +24,10 @@ export async function activate(context: vscode.ExtensionContext) {
   vscode.commands.executeCommand("workbench.action.toggleSidebarVisibility");
 
   const quickstart = new Quickstart(quickstartMetadata, context);
-
-  // If a user closes the terminal the extension opened we set it
-  // back to undefined so we know to open a new terminal
+  quickstart.start();
+  
+  // Create a listener for the terminal panel in case user closes it
+  // so we know to open a new one when we send a command to it
   context.subscriptions.push(
     vscode.window.onDidCloseTerminal((closedTerminal) => {
       if (closedTerminal === quickstart.terminal) {

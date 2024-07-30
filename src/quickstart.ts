@@ -1,9 +1,9 @@
 import * as vscode from "vscode";
 import path from "path";
-import getNonce from "./utils/getNonce";
 import { readFileSync } from "fs";
 import QuickstartSection from "./quickstartSection";
 import { TutorialData } from "./quickstartSection";
+import getNonce from "./utils/getNonce";
 import fileHasBackup from "./utils/fileBackupPath";
 import fileBackupPath from "./utils/fileBackupPath";
 import codeRunner from "./utils/codeRunner";
@@ -12,12 +12,12 @@ export default class Quickstart {
   public metadata: TutorialData;
   public editor: vscode.TextEditor | undefined;
   public currentlyDisplayingDocument: vscode.TextDocument | undefined;
-  public _panel: vscode.WebviewPanel | undefined;
+  private _panel: vscode.WebviewPanel | undefined;
   public sections: QuickstartSection[];
   public context: vscode.ExtensionContext;
   public currentSectionIndex = 0;
   public currentSection: QuickstartSection;
-  public codeMatchesBackup: boolean = true;
+  public codeMatchesBackup = true;
   private _terminal: vscode.Terminal | undefined;
   private _latestSectionIdx = 0;
 
@@ -26,16 +26,19 @@ export default class Quickstart {
     this.sections = this.metadata.sections.map((section) => {
       return new QuickstartSection(section, context);
     });
-    this._codeModifiedListener();
-    this._activeTextEditorListener();
     this.context = context;
     this.currentSection = this.sections[0];
+  }
+
+  public start() {
+    this._codeModifiedListener();
+    this._activeTextEditorListener();
     vscode.window
       .createTerminal({ hideFromUser: true })
       .sendText("zenml init && zenml stack set default");
     this.openSection(0);
   }
-
+  
   // setters & getters
   public set terminal(value: vscode.Terminal | undefined) {
     this._terminal = value;
