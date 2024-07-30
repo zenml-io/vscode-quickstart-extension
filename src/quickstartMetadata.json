@@ -103,6 +103,20 @@
       ]
     },
     {
+      "title": "Promoting a Model to Production",
+      "description": "",
+      "steps": [
+        {
+          "doc": "zenmlQuickstart/sections/promotingAModel/promotingAModel.md",
+          "code": "zenmlQuickstart/sections/promotingAModel/promotingAModel.py"
+        },
+        {
+          "doc": "zenmlQuickstart/sections/promotingAModel/finish.md",
+          "code": "zenmlQuickstart/sections/promotingAModel/promotingAModel.py"
+        }
+      ]
+    },
+    {
       "title": "Consuming the Model in Production",
       "description": "Now that we've produced a few models, we're going to learn how to manage them.",
       "steps": [
