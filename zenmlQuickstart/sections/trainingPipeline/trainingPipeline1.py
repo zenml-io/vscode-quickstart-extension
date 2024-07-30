@@ -1,22 +1,22 @@
 import pandas as pd
+from typing import Optional, List
+from typing_extensions import Annotated
+
 from sklearn.base import ClassifierMixin
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import SGDClassifier
-from typing_extensions import Annotated
+from uuid import UUID
+
 from zenml import ArtifactConfig, step, pipeline
 from zenml.logger import get_logger
-from typing import Optional, List
-from uuid import UUID
-logger = get_logger(__name__)
+from zenml.client import Client
 
 from pipelines import feature_engineering 
 from steps import model_evaluator
-from zenml.client import Client
 
-# Initialize the ZenML client to fetch objects from the ZenML Server
+logger = get_logger(__name__)
 client = Client()
-dataset_trn_artifact_version = client.get_artifact_version("dataset_trn")
-dataset_tst_artifact_version = client.get_artifact_version("dataset_tst")
+
 @step
 def model_trainer(
     dataset_trn: pd.DataFrame,
@@ -47,17 +47,15 @@ def training(
     min_train_accuracy: float = 0.0,
     min_test_accuracy: float = 0.0,
 ):
-    
-    
-    """Model training pipeline.""" 
+    """Model training pipeline."""
     if train_dataset_id is None or test_dataset_id is None:
         # If we dont pass the IDs, this will run the feature engineering pipeline   
         dataset_trn, dataset_tst = feature_engineering()
     else:
         # Load the datasets from an older pipeline
-        dataset_trn = client.get_artifact_version(name_id_or_prefix=train_dataset_id)
-        dataset_tst = client.get_artifact_version(name_id_or_prefix=test_dataset_id) 
-
+        dataset_trn = client.get_artifact_version(name_id_or_prefix=train_dataset_id).load()
+        dataset_tst = client.get_artifact_version(name_id_or_prefix=test_dataset_id).load()
+    
     trained_model = model_trainer(
         dataset_trn=dataset_trn,
         model_type=model_type,
@@ -70,26 +68,38 @@ def training(
         min_train_accuracy=min_train_accuracy,
         min_test_accuracy=min_test_accuracy,
     )
-    
 
-# Use a random forest model with the chosen datasets.
-# We need to pass the ID's of the datasets into the function
-training(
-    model_type="rf",
-    train_dataset_id=dataset_trn_artifact_version.id,
-    test_dataset_id=dataset_tst_artifact_version.id
-)
+if __name__ == "__main__":
+    dataset_trn_artifact_version = client.get_artifact_version("dataset_trn")
+    dataset_tst_artifact_version = client.get_artifact_version("dataset_tst")
 
-rf_run = client.get_pipeline("training").last_run
-# Use a SGD classifier
-sgd_run = training(
-    model_type="sgd",
-    train_dataset_id=dataset_trn_artifact_version.id,
-    test_dataset_id=dataset_tst_artifact_version.id
-)
+    # Use a random forest model with the chosen datasets.
+    # We need to pass the IDs of the datasets into the function
+    training(
+        model_type="rf",
+        train_dataset_id=dataset_trn_artifact_version.id,
+        test_dataset_id=dataset_tst_artifact_version.id
+    )
 
-sgd_run = client.get_pipeline("training").last_run
+    rf_run = client.get_pipeline("training").last_run
 
-# The evaluator returns a float value with the accuracy
+    # Use a SGD classifier
+    sgd_run = training(
+        model_type="sgd",
+        train_dataset_id=dataset_trn_artifact_version.id,
+        test_dataset_id=dataset_tst_artifact_version.id
+    )
 
-print(rf_run.steps["model_evaluator"].output.load() > sgd_run.steps["model_evaluator"].output.load())
+    sgd_run = client.get_pipeline("training").last_run
+
+    # The evaluator returns a float value with the accuracy
+    random_forest_accuracy = rf_run.steps["model_evaluator"].output.load()
+    sgd_accuracy = sgd_run.steps["model_evaluator"].output.load()
+
+    print(f"Random Forest accuracy: {random_forest_accuracy}")
+    print(f"SGD accuracy: {sgd_accuracy}")
+
+    if random_forest_accuracy > sgd_accuracy:
+        print("Random Forest is better!")
+    else:
+        print("SGD is better!")
