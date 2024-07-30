@@ -409,7 +409,6 @@ export default class Quickstart {
 
   private _generateHTML(docContent: string) {
     const webview = this.panel.webview;
-    const devContainerPath = getDevContainerPath(this.context);
 
     // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
     const scriptUri = webview.asWebviewUri(
