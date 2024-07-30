@@ -11,11 +11,11 @@ artifacts and models via the client as well as the ZenML Dashboard.
 This was just the tip of the iceberg of what ZenML can do; check out the [**docs**](https://docs.zenml.io/) to learn more
 about the capabilities of ZenML. For example, you might want to:
 
-- [Deploy ZenML](https://docs.zenml.io/user-guide/production-guide/connect-deployed-zenml) to collaborate with your colleagues.
-- Run the same pipeline on a [cloud MLOps stack in production](https://docs.zenml.io/user-guide/production-guide/cloud-stack).
-- Track your metrics in an experiment tracker like [MLflow](https://docs.zenml.io/stacks-and-components/component-guide/experiment-trackers/mlflow).
+- [Deploy ZenML](https://docs.zenml.io/user-guide/production-guide/deploying-zenml) to collaborate with your colleagues.
+- Run the same pipeline on a [cloud MLOps stack in production](https://docs.zenml.io/user-guide/production-guide/cloud-orchestration).
+- Track your metrics in an experiment tracker like [MLflow](https://docs.zenml.io/stack-components/experiment-trackers/mlflow).
 
 ## What next?
 
-* If you have questions or feedback... join our [**Slack Community**](https://zenml.io/slack) and become part of the ZenML family!
-* If you want to quickly get started with ZenML, check out [ZenML Pro](https://zenml.io/pro).
+- If you have questions or feedback... join our [**Slack Community**](https://zenml.io/slack) and become part of the ZenML family!
+- If you want to quickly get started with ZenML, check out [ZenML Pro](https://zenml.io/pro).
