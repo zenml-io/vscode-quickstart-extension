@@ -10,5 +10,4 @@ registry. However, these topics can be explored more in the
 [ZenML docs](https://docs.zenml.io).
 
 For now, we will use the ZenML model control plane to promote our best
-model to `production`. You can do this by simply setting the `stage` of
-your chosen model version to the `production` tag.
+model to `production`.
