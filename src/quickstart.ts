@@ -33,7 +33,9 @@ export default class Quickstart {
     this.currentSection = this.sections[0];
     vscode.window
       .createTerminal({ hideFromUser: true })
-      .sendText("zenml init --path /workspaces && zenml stack set default");
+      .sendText(
+        "zenml init --path /workspaces/vscode-quickstart/.devcontainer && zenml stack set default"
+      );
     this.openSection(0);
   }
 
