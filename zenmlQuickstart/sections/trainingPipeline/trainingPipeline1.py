@@ -52,17 +52,7 @@ def training(
     min_test_accuracy: float = 0.0,
 ):
     """Model training pipeline."""
-    if train_dataset_id is None or test_dataset_id is None:
-        # If we dont pass the IDs, this will run the feature engineering pipeline
-        dataset_trn, dataset_tst = feature_engineering()
-    else:
-        # Load the datasets from an older pipeline
-        dataset_trn = client.get_artifact_version(
-            name_id_or_prefix=train_dataset_id
-        ).load()
-        dataset_tst = client.get_artifact_version(
-            name_id_or_prefix=test_dataset_id
-        ).load()
+    dataset_trn, dataset_tst = feature_engineering()
 
     trained_model = model_trainer(
         dataset_trn=dataset_trn,

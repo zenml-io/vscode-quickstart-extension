@@ -25,11 +25,7 @@ pipeline_settings["model"].version = "sgd"
 training_configured = training.with_options(**pipeline_settings)
 
 # We can now run this as usual
-training_configured(
-    model_type="sgd",
-    train_dataset_id=dataset_trn_artifact_version.id,
-    test_dataset_id=dataset_tst_artifact_version.id,
-)
+training_configured(model_type="sgd")
 
 # Let's train the RF model and set the version name to "rf"
 pipeline_settings["model"].version = "rf"
@@ -39,8 +35,4 @@ pipeline_settings["model"].version = "rf"
 training_configured = training.with_options(**pipeline_settings)
 
 # Let's run it again to make sure we have two versions
-training_configured(
-    model_type="rf",
-    train_dataset_id=dataset_trn_artifact_version.id,
-    test_dataset_id=dataset_tst_artifact_version.id,
-)
+training_configured(model_type="rf")

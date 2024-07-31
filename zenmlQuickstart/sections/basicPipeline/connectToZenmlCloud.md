@@ -24,3 +24,5 @@ ZenML Pro is a managed service that provides a hosted ZenML environment. It allo
     Your cloud instance will have a url that looks like <code>https://1af15d25-zenml.cloudinfra.zenml.io</code>.
   </p>
 </div>
+
+Once you're connected, let's rerun the pipeline!
