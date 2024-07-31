@@ -1,16 +1,11 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 import quickstartMetadata from "./quickstartMetadata.json";
 import Quickstart from "./quickstart";
-import setDirectory from "./utils/setExtensionDirectory";
 import createSectionBackup from "./utils/createSectionBackup";
 import getDevContainerPath from "./utils/getDevContainerPath";
 
 export async function activate(context: vscode.ExtensionContext) {
-  const devContainerPath = getDevContainerPath(context);
-
-  createSectionBackup(devContainerPath);
+  createSectionBackup(getDevContainerPath(context));
 
   // close all terminals
   vscode.window.terminals.forEach((term) => term.dispose());
