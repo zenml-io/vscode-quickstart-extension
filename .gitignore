@@ -7,7 +7,7 @@ node_modules
 **/runSuccess*.txt
 **/runError*.txt
 
-zenmlQuickstart/sectionsBackup
+**/sectionsBackup
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
