@@ -30,20 +30,31 @@ If you're looking for the ZenML Extension for VS Code click [here](https://githu
 
 5. Once the container finishes building, you can open the extension for testing or debugging by pressing F5.
 
-### Building the Extension
-
-When you've made changes to the extension code you'll need to compile the extension by running `npm run compile`.
-Next you'll need to rebuild and reopen the container to see the changes.
-
-To build the extension itself, install [vsce](https://github.com/microsoft/vscode-vsce) and run `vsce package` from the extension directory.
+**Note**: If you're finding the extension is behaving oddly, double check that the project is running in a devcontainer before starting up the extension in debug mode. Multiple parts of the extension expect to be running in devcontainer and will break otherwise.
 
 ## Developing the Extension
 
-The extension is only made to be run in a Dev Container and is not intended to be downloaded and used through the Extension MarketPlace
+The extension is built to run in three different devcontainer environments: a development devcontainer (this repository), and either a Github Codespaces or local devcontainer for the user-facing repository. (https://github.com/zenml-io/vscode-quickstart) There are instructions for how to install and use the Codespaces and local devcontainer options in the readme for the vscode-quickstart repository.
+
+Keep in mind that the changes made to the extension will need to be tested in both of the user-facing devcontainers as well.
+
+### Building the Extension
+
+The quickstart is meant to be used from this repo: https://github.com/zenml-io/vscode-quickstart - any changes to the extension code itself or to `zenmlQuickstart` files made in this development repository need to be moved to and tested on the user-facing repository. Currently, this process is done manually and with npm scripts.
+
+When you've made changes to the extension you'll need to build it, install [vsce](https://github.com/microsoft/vscode-vsce) and run `vsce package` from the extension directory to create a new .vsix file based on the changes you've made. There is also an npm script `buildExtension:replace` which will build the extension and replace the .vsix file with the newly packaged extension in both the `vscode-quickstart-extension` repo, and by relative path, in the user-facing `quickstart-extension` repo. **Note**: `buildExtension:replace` relies on the relative location of the two cloned repositories - they should be side-by-side for this command to work.
+
+Likewise, if you make changes to the files contained in `zenmlQuickstart`, those changed files will need to be moved to the `quickstart-extension` repo as well.
+
+### Building the Docker Image
+
+The process of building the docker image/.devcontainer upon first opening the quickstart can be slow, to decrease the time a user spends initially waiting when they open the quickstart in a devcontainer locally or in a Github codespace the user facing repository uses a custom image with zenml, pyarrow, and sklearn already installed. The Dockerfile used to build the image that gets pushed to DockerHub is on the `docker-image-build` branch of this repository.
+
+Check out this [guide](https://docs.docker.com/guides/getting-started/build-and-push-first-image/) for instructions on how to build the image and upload it. You'll need to make sure that the devcontainer.json references this image on any branches that should use it, for example: `"image": "zenml/quickstart:latest"` will use the latest image for quickstart on Dockerhub.
 
 ### Dev Container
 
-The Dockerfile and devcontainer.json configurations are similar to the corresponding configurations for the deployed Quickstart-Extension but with some changes to make development easier. The Quickstart-Extension is meant to be run in a Dev Container, either locally or in a Github Codespace. Because of that, development takes place using a Dev Container to more closely match the deployed environment.
+The Dockerfile and devcontainer.json configurations are similar to the corresponding configurations for the deployed Quickstart-Extension but with some changes to make development easier. The Quickstart-Extension is meant to be run in a Dev Container, either locally or in a Github Codespace. Because of that, development takes place using a Dev Container to more closely match the deployed environment. The configuration for the devcontainer is contained in the `devcontainer.json` file, which builds on top of the Dockerfile in `.devcontainer`
 
 ### Overview of Codebase
 
