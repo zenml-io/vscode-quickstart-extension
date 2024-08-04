@@ -1,8 +1,7 @@
 import * as vscode from "vscode";
 import path from "path";
 import { readFileSync } from "fs";
-import QuickstartSection from "./quickstartSection";
-import { TutorialData } from "./quickstartSection";
+import { TutorialData, QuickstartSection } from "./quickstartSection";
 import getNonce from "./utils/getNonce";
 import fileHasBackup from "./utils/fileBackupPath";
 import fileBackupPath from "./utils/fileBackupPath";
@@ -38,7 +37,7 @@ export default class Quickstart {
       .sendText("zenml init && zenml stack set default");
     this.openSection(0);
   }
-  
+
   // setters & getters
   public set terminal(value: vscode.Terminal | undefined) {
     this._terminal = value;
@@ -514,4 +513,3 @@ export default class Quickstart {
     </html>`;
   }
 }
-
