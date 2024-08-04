@@ -2,7 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 import quickstartMetadata from "./quickstartMetadata.json";
-import Quickstart from "./quickstart";
+import QuickstartOrchestrator from "./quickstartOrchestrator";
 import setDirectory from "./utils/setExtensionDirectory";
 import createSectionBackup from "./utils/createSectionBackup";
 import getExtensionUri from "./utils/getExtensionUri";
@@ -23,9 +23,9 @@ export async function activate(context: vscode.ExtensionContext) {
   vscode.commands.executeCommand("workbench.view.explorer");
   vscode.commands.executeCommand("workbench.action.toggleSidebarVisibility");
 
-  const quickstart = new Quickstart(quickstartMetadata, context);
+  const quickstart = new QuickstartOrchestrator(quickstartMetadata, context);
   quickstart.start();
-  
+
   // Create a listener for the terminal panel in case user closes it
   // so we know to open a new one when we send a command to it
   context.subscriptions.push(

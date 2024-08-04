@@ -7,7 +7,7 @@ import fileHasBackup from "./utils/fileBackupPath";
 import fileBackupPath from "./utils/fileBackupPath";
 import codeRunner from "./utils/codeRunner";
 
-export default class Quickstart {
+export default class QuickstartOrchestrator {
   public metadata: TutorialData;
   public editor: vscode.TextEditor | undefined;
   public currentlyDisplayingDocument: vscode.TextDocument | undefined;
