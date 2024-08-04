@@ -54,3 +54,32 @@ My general naming guidelines:
   
 
 
+- openNextSection:
+  ```ts
+  quickstart.incrementCurrentSection();
+  if (quickstart.currentSection.code()) {
+    viewProvider.setTwoColumnLayout();
+    viewProvider.displayDoc(quickstart.currentSection.doc());
+    viewProvider.displayCode(quickstart.currentSection.code());
+  } else {
+    viewProvider.setOneColumnLayout();
+    viewProvider.displayDoc(quickstart.currentSection.doc());
+  }
+  ```
+
+- openPreviousSection:
+  -
+
+  - set the current section to the given section id
+  - if the current section is greater than the last section, set the latest section to this one
+  - check if the current section has a codefile
+    - if not:
+      - close the code editor
+      - set the layout to one column only
+      - open the document panel
+      - early return
+    - otherwise:
+      - set the layout to two column
+      - open the code panel
+      - open the doc panel
+

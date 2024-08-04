@@ -20,7 +20,7 @@ export interface Section {
   steps: SectionStep[];
 }
 
-export default class QuickstartSection {
+export class QuickstartSection {
   public title: string;
   public context: vscode.ExtensionContext;
   public description: string;
