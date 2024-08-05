@@ -95,10 +95,6 @@
         {
           "doc": "zenmlQuickstart/sections/modelControlPlane/modelControlPlane2.md",
           "code": "zenmlQuickstart/sections/modelControlPlane/modelControlPlane.py"
-        },
-        {
-          "doc": "zenmlQuickstart/sections/modelControlPlane/finish.md",
-          "code": "zenmlQuickstart/sections/modelControlPlane/modelControlPlane.py"
         }
       ]
     },
