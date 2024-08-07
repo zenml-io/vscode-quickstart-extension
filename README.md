@@ -1,38 +1,68 @@
-# Readme
+# ZenML VS Code Quickstart Extension Development Guide
 
-This is a branch specifically for previewing the flow within sections, which means it has a couple things different from the user-facing extension:
+Welcome to the development repository for the ZenML VSCode Quickstart Extension! This guide is intended for contributors looking to develop and extend the functionality of the ZenML VSCode Quickstart Extension. The extension aims to smoothly onboard developers looking to get started with ZenML.
 
-- there is an edit text to easily edit markdown files
-- the 'next' button is never hidden for easy traversing through the sections.
+If you're looking to *use* the Quickstart Extension head [here](https://github.com/zenml-io/vscode-quickstart).
 
-## Start up on Codespaces (Slower load time)
+If you're looking for the ZenML Extension for VSCode click [here](https://github.com/zenml-io/vscode-zenml).
 
-1. Should be able to start up a new codespace for this repo (on this development repo it's currently ~8-9minutes to start up, far cry from the 1 minute on the outward facing repo)
-2. Run `npm install`
-3. Run `npm run compile`
-4. Hit the Run and Debug button on the left of VSCode. Click Run Extension. This should open the extension in debug mode in a new tab
-5. The new tab might take a while to load and will look like it's doing nothing for a few seconds and then it will reload again with the quickstart panels open.
+## Getting Started
 
-## Start up Locally (Faster load time)
+### Prerequisites
 
-1. Or you can pull this branch down on your machine, and run it in a dev container locally -- should be faster.
-2. Same steps 2-4 above.
+- [Node.js](https://nodejs.org/en/download/)
+- [Visual Studio Code](https://code.visualstudio.com/Download)
+- [Docker](https://www.docker.com/get-started/)
+- [Dev Containers Extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
 
-## Editing
+### Installation
 
-- We made a little `edit text` button which should allow you to quickly edit the markdown file associated with the current page you're viewing. You'll have to `cmd + s` to save and then `cmd + r` to reload the extension to see the changes though.
-- For editing the tip box to connect to zenML, that's actually its own html file in `zenmlQuickstart/sections/basicPipeline/connectToZenmlCloud.html`
-- If you edit any of the code files and `cmd + s` that will save the changes to the code files unless you hit the `reset code` button for that particular file.
-- If you want to break any of the steps into more steps, you'd just have to make a new object where you want it in the `quickstartMetadata.json` file. See Structure below for how that's stuctured.
+1. Clone the repository:
+   `git clone https://github.com/zenml-io/vscode-quickstart-extension cd vscode-quickstart-extension`
 
-## Structure
+2. Install dependencies:
+   `npm install`, then `npm run compile`
 
-- We're using a JSON to organize all the files into sections and steps inside each section. That is the `src > quickstartMetadata.json` file
+3. Open the project in Visual Studio Code.
+
+4. You should be prompted to open the project in a devcontainer if you have the Dev Containers extension installed. If not, open the project by
+   selecting "Dev Containers: Reopen in Container" from the VS Code command palette (`cmd + shift + p` if you're on MacOS).
+
+5. Once the container finishes building, you can open the extension for testing or debugging by pressing `F5`, or by opening the Run and Debug side panel and hitting Run Extension.
+
+### Building the Extension
+
+When you've made changes to the extension code you'll need to compile the extension by running `npm run compile`.
+Next you'll need to rebuild and reopen the container to see the changes.
+
+To build the extension itself, install [vsce](https://github.com/microsoft/vscode-vsce) and run `vsce package` from the extension directory.
+
+## Developing the Extension
+
+The extension is only made to be run in a Dev Container and is not intended to be downloaded and used through the Extension MarketPlace
+
+### Dev Container
+
+The Dockerfile and devcontainer.json configurations are similar to the corresponding configurations for the deployed Quickstart-Extension but with some changes to make development easier. The Quickstart-Extension is meant to be run in a Dev Container, either locally or in a Github Codespace. Because of that, development takes place using a Dev Container to more closely match the deployed environment.
+
+### Overview of Codebase
+
+The quickstart is broken up into a series of sections and is meant to be followed from section one through to the end. `zenmlQuickstart/sections` is where the files for each section are located. `quickstartMetadata.json` organizes those sections into a series of steps. Very broadly - each step will appear in a webview panel with descriptive text and load a corresponding python file to run next to.
+
+When the extension activates (`extension.ts`), the `Quickstart` class is responsible for orchestrating the walkthrough.
+
+### Editing Flow / Content
+There is an `edit text` button in the WebView HTML that can be enabled by uncommenting it to make it easier to make edits to the markdown file while you are previewing the Quickstart flow. You can then `cmd + s` to save and then `cmd + r` to reload the extension to see the changes to the text.
+
+To make deeper changes like adding steps or reorganizing files, you'll have to make changes to the `quickstartMetadata.json` file.
+
 - The `Metadata` object has a sections array with `Section` objects.
 - Each `Section` object has a `Steps` array.
-- Each step has a markdown file associated with it (doc), an optional code file (code), and an optional html file with interactive elements (this was going to be displayed in the side panel, but now that we just have everything in one panel, it just gets displayed after the markdown file).
+- Each step has a markdown file associated with it (`doc`), and an optional code file (`code`).
 - If the optional code file doesn't exist, then the document just opens a single panel that takes up the whole screen rather than split screen.
-- All the files are in the `zenmlQuickstart` folder.
-  - assets contains the pictures
-  - quickstartModules contains the codefiles downloaded from the original quickstart that are being used in this tutorial
-  - Sections contain the actual tutorial markdown files and code files that are being referenced in the `quickstartMetadata.json` file. Right now each Section has its own directory with files.
+
+
+
+## Documentation
+
+For more detailed documentation on how to use ZenML, please refer to the [ZenML Documentation](https://docs.zenml.io/).
