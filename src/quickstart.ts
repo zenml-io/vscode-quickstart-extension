@@ -443,7 +443,9 @@ export default class Quickstart {
       this.currentSection.isDone();
     const latestSection = this.currentSectionIndex === this._latestSectionIdx;
     let nextArrow;
-    if (end || !this.currentSection.hasBeenDone()) {
+    // if (end || !this.currentSection.hasBeenDone()) {
+    if (end) {
+      // for develop only
       nextArrow = `<button class="arrow hide" id="next"><i class="codicon codicon-chevron-right"></i></button>`;
     } else if (latestSection) {
       nextArrow = `<button class="arrow" id="next">Next<i class="codicon codicon-chevron-right"></i></button>`;
@@ -478,7 +480,7 @@ export default class Quickstart {
   <body>
     <header class="action-buttons">
       <!-- edit text for development only -->
-      <!-- <button class="secondary" id="edit-text">edit text</button>  -->
+      <button class="secondary" id="edit-text">edit text</button>
       <button class="reset-code secondary ${
         this.codeMatchesBackup ? "hide" : ""
       }"><i class="codicon codicon-history"></i>reset code</button>

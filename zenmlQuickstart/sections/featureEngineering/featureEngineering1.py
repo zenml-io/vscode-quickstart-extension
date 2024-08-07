@@ -5,15 +5,11 @@ from typing import Optional, List
 
 from zenml import pipeline
 
-from steps import (
-    data_loader,
-    data_preprocessor,
-    data_splitter
-)
+from steps import data_loader, data_preprocessor, data_splitter
 
-# Initialize the ZenML client to fetch objects from the ZenML Server
 client = Client()
-# as in Notion Doc
+
+
 @pipeline
 def feature_engineering(
     test_size: float = 0.3,
@@ -21,7 +17,7 @@ def feature_engineering(
     normalize: Optional[bool] = None,
     drop_columns: Optional[List[str]] = None,
     target: Optional[str] = "target",
-    random_state: int = 17
+    random_state: int = 17,
 ):
     """Feature engineering pipeline."""
     # Link all the steps together by calling them and passing the output
@@ -40,5 +36,6 @@ def feature_engineering(
         target=target,
         random_state=random_state,
     )
-    
+
+
 feature_engineering()

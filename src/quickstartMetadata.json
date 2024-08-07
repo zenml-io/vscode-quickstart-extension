@@ -20,8 +20,7 @@
       "steps": [
         {
           "doc": "zenmlQuickstart/sections/basicPipeline/connectToZenmlCloud.md",
-          "code": "zenmlQuickstart/sections/basicPipeline/code2.py",
-          "html": "zenmlQuickstart/sections/basicPipeline/connectToZenmlCloud.html"
+          "code": "zenmlQuickstart/sections/basicPipeline/code2.py"
         },
         {
           "doc": "zenmlQuickstart/sections/basicPipeline/finish.md",
@@ -53,8 +52,7 @@
         },
         {
           "doc": "zenmlQuickstart/sections/featureEngineering/afterRunning1.md",
-          "code": "zenmlQuickstart/sections/featureEngineering/featureEngineering1.py",
-          "html": "zenmlQuickstart/sections/featureEngineering/runLocalDashboard.html"
+          "code": "zenmlQuickstart/sections/featureEngineering/featureEngineering1.py"
         }
       ]
     },
@@ -97,10 +95,20 @@
         {
           "doc": "zenmlQuickstart/sections/modelControlPlane/modelControlPlane2.md",
           "code": "zenmlQuickstart/sections/modelControlPlane/modelControlPlane.py"
+        }
+      ]
+    },
+    {
+      "title": "Promoting a Model to Production",
+      "description": "",
+      "steps": [
+        {
+          "doc": "zenmlQuickstart/sections/promotingAModel/promotingAModel.md",
+          "code": "zenmlQuickstart/sections/promotingAModel/promotingAModel.py"
         },
         {
-          "doc": "zenmlQuickstart/sections/modelControlPlane/finish.md",
-          "code": "zenmlQuickstart/sections/modelControlPlane/modelControlPlane.py"
+          "doc": "zenmlQuickstart/sections/promotingAModel/finish.md",
+          "code": "zenmlQuickstart/sections/promotingAModel/promotingAModel.py"
         }
       ]
     },
