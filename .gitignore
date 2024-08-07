@@ -8,6 +8,7 @@ node_modules
 **/runError*.txt
 
 zenmlQuickstart/sectionsBackup
+.devcontainer/zenmlQuickstart/sectionsBackup
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
