@@ -22,7 +22,9 @@ export default class QuickstartOrchestrator {
   }
 
   public start() {
+    this._closeSidebar();
     this._initializeRestoreCodeButtonListeners();
+    this._initializeQuickstartTerminalClosedListener();
     vscode.window
       .createTerminal({ hideFromUser: true })
       .sendText("zenml init && zenml stack set default");
@@ -331,6 +333,23 @@ export default class QuickstartOrchestrator {
         this._checkCodeMatchAndUpdate(event);
       }
     });
+  }
+
+  // Updates the status of quickstart terminal if ZenML terminal 
+  // instance gets disposed of
+  private _initializeQuickstartTerminalClosedListener() {
+    this.context.subscriptions.push(
+      vscode.window.onDidCloseTerminal((closedTerminal) => {
+        if (closedTerminal === this.terminal) {
+          this.terminal = undefined;
+        }
+      })
+    );
+  }
+
+  private _closeSidebar() {
+    vscode.commands.executeCommand("workbench.view.explorer");
+    vscode.commands.executeCommand("workbench.action.toggleSidebarVisibility");
   }
 
   private _isCodeSameAsBackup() {
