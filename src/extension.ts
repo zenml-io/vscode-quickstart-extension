@@ -6,6 +6,7 @@ import QuickstartOrchestrator from "./quickstartOrchestrator";
 import setDirectory from "./utils/setExtensionDirectory";
 import createSectionBackup from "./utils/createSectionBackup";
 import getExtensionUri from "./utils/getExtensionUri";
+import Quickstart from "./quickstart";
 
 export async function activate(context: vscode.ExtensionContext) {
   const extensionUri = getExtensionUri(context);
@@ -23,15 +24,16 @@ export async function activate(context: vscode.ExtensionContext) {
   vscode.commands.executeCommand("workbench.view.explorer");
   vscode.commands.executeCommand("workbench.action.toggleSidebarVisibility");
 
-  const quickstart = new QuickstartOrchestrator(quickstartMetadata, context);
-  quickstart.start();
+  const quickstart = new Quickstart(quickstartMetadata, context);
+  const orchestrator = new QuickstartOrchestrator(context, quickstart);
+  orchestrator.start();
 
   // Create a listener for the terminal panel in case user closes it
   // so we know to open a new one when we send a command to it
   context.subscriptions.push(
     vscode.window.onDidCloseTerminal((closedTerminal) => {
-      if (closedTerminal === quickstart.terminal) {
-        quickstart.terminal = undefined;
+      if (closedTerminal === orchestrator.terminal) {
+        orchestrator.terminal = undefined;
       }
     })
   );

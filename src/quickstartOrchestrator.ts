@@ -1,31 +1,24 @@
 import * as vscode from "vscode";
 import path from "path";
 import { readFileSync } from "fs";
-import { TutorialData, QuickstartSection } from "./quickstartSection";
 import getNonce from "./utils/getNonce";
 import fileHasBackup from "./utils/fileBackupPath";
 import fileBackupPath from "./utils/fileBackupPath";
 import codeRunner from "./utils/codeRunner";
+import Quickstart from "./quickstart";
 
 export default class QuickstartOrchestrator {
-  public metadata: TutorialData;
   public editor: vscode.TextEditor | undefined;
   public currentlyDisplayingDocument: vscode.TextDocument | undefined;
-  public sections: QuickstartSection[];
   public context: vscode.ExtensionContext;
-  public currentSection: QuickstartSection;
   public codeMatchesBackup = true;
   private _panel: vscode.WebviewPanel | undefined;
   private _terminal: vscode.Terminal | undefined;
-  private _latestSectionIdx = 0;
+  private _quickstart: Quickstart;
 
-  constructor(metadata: TutorialData, context: vscode.ExtensionContext) {
-    this.metadata = metadata;
-    this.sections = this.metadata.sections.map((section, index) => {
-      return new QuickstartSection(section, context, index);
-    });
+  constructor(context: vscode.ExtensionContext, quickstart: Quickstart) {
+    this._quickstart = quickstart;
     this.context = context;
-    this.currentSection = this.sections[0];
   }
 
   public start() {
@@ -110,52 +103,40 @@ export default class QuickstartOrchestrator {
   }
 
   async back() {
-    if (this.currentSection.currentStep === 0) {
-      this.openSection(this.currentSection.index - 1);
-    } else {
-      this.currentSection.previousStep();
-      this.openSection(this.currentSection.index);
-    }
+    this._quickstart.back();
+    this.openSection(this._quickstart.currentSection.index)
   }
-  // Doc Panel
+
   async openSection(sectionId: number) {
-    this._setSection(sectionId);
+    this._quickstart.setCurrentSection(sectionId);
 
-    if (sectionId > this._latestSectionIdx) {
-      this._latestSectionIdx = sectionId;
-    }
-
-    const openCode = this.currentSection.code();
-
-    if (!openCode) {
+    if (this._quickstart.currentSection.code()) {
+      await vscode.commands.executeCommand("vscode.setEditorLayout", {
+        orientation: 0,
+        groups: [
+          { groups: [{}], size: 0.5 },
+          { groups: [{}], size: 0.5 },
+        ],
+      });
+      
+      this.openCodePanel(this._quickstart.currentSection.code() as string);
+    } else {
       this.closeCurrentEditor();
       await vscode.commands.executeCommand("vscode.setEditorLayout", {
         orientation: 0,
         groups: [{ groups: [{}], size: 1 }],
       });
-
-      this.openDocPanel(
-        this.currentSection.title,
-        this.currentSection.docHTML()
-      );
-      return;
     }
 
-    await vscode.commands.executeCommand("vscode.setEditorLayout", {
-      orientation: 0,
-      groups: [
-        { groups: [{}], size: 0.5 },
-        { groups: [{}], size: 0.5 },
-      ],
-    });
-
-    this.openCodePanel(openCode);
-    this.openDocPanel(this.currentSection.title, this.currentSection.docHTML());
+    this.openDocPanel(
+      this._quickstart.currentSection.title,
+      this._quickstart.currentSection.docHTML()
+    );
   }
 
   openNextStep() {
-    this.currentSection.nextStep();
-    this.openSection(this.currentSection.index);
+    this._quickstart.currentSection.nextStep();
+    this.openSection(this._quickstart.currentSection.index);
   }
 
   // Terminal
@@ -213,20 +194,6 @@ export default class QuickstartOrchestrator {
       this._initializePanel();
     }
 
-    // check if doc content has images
-    // if so, replace the image source with vscode URI
-    docContent = docContent.replace(
-      /<img\s+[^>]*src="([^"]*)"[^>]*>/g,
-      (match, originalSrc) => {
-        const onDiskPath = vscode.Uri.joinPath(
-          this.context.extensionUri,
-          originalSrc
-        );
-        const newSrc = this._panel?.webview.asWebviewUri(onDiskPath);
-        return match.replace(/src="[^"]*"/, `src="${newSrc}"`);
-      }
-    );
-
     // nullcheck to make typescript happy
     if (this._panel) {
       this._panel.title = title;
@@ -262,16 +229,6 @@ export default class QuickstartOrchestrator {
   }
 
   // PRIVATE METHODS:
-
-  private _setSection(index: number) {
-    if (index > -1 && index < this.sections.length) {
-      // this.currentSectionIndex = index;
-      this.currentSection = this.sections[index];
-    } else {
-      throw new Error("Invalid Index");
-    }
-  }
-
   private _initializePanel() {
     this._panel = vscode.window.createWebviewPanel(
       "zenml.markdown", // used internally - I think an identifier
@@ -305,7 +262,7 @@ export default class QuickstartOrchestrator {
         }
         // for dev only
         case "editText": {
-          this.openEditPanel(this.currentSection.doc());
+          this.openEditPanel(this._quickstart.currentSection.doc());
           break;
         }
         case "serverConnect": {
@@ -317,17 +274,17 @@ export default class QuickstartOrchestrator {
           break;
         }
         case "nextStep": {
-          this.currentSection.nextStep();
-          this.openSection(this.currentSection.index);
+          this._quickstart.currentSection.nextStep();
+          this.openSection(this._quickstart.currentSection.index);
           break;
         }
         case "next": {
-          if (this.currentSection.isDone()) {
-            this.openSection(this.currentSection.index + 1);
+          if (this._quickstart.currentSection.isDone()) {
+            this.openSection(this._quickstart.currentSection.index + 1);
             this.closeTerminal();
           } else {
-            this.currentSection.nextStep();
-            this.openSection(this.currentSection.index);
+            this._quickstart.currentSection.nextStep();
+            this.openSection(this._quickstart.currentSection.index);
           }
           break;
         }
@@ -371,8 +328,8 @@ export default class QuickstartOrchestrator {
       // Guard against files without backup
       this.codeMatchesBackup = true;
       this.openDocPanel(
-        this.currentSection.title,
-        this.currentSection.docHTML()
+        this._quickstart.currentSection.title,
+        this._quickstart.currentSection.docHTML()
       );
     } else {
       // Checks if code matches and re-renders panel
@@ -380,8 +337,8 @@ export default class QuickstartOrchestrator {
       if (codeMatch !== this.codeMatchesBackup) {
         this.codeMatchesBackup = codeMatch;
         this.openDocPanel(
-          this.currentSection.title,
-          this.currentSection.docHTML()
+          this._quickstart.currentSection.title,
+          this._quickstart.currentSection.docHTML()
         );
       }
     }
@@ -433,16 +390,30 @@ export default class QuickstartOrchestrator {
       )
     );
 
+    // check if doc content has images
+    // if so, replace the image source with vscode URI
+    docContent = docContent.replace(
+      /<img\s+[^>]*src="([^"]*)"[^>]*>/g,
+      (match, originalSrc) => {
+        const onDiskPath = vscode.Uri.joinPath(
+          this.context.extensionUri,
+          originalSrc
+        );
+        const newSrc = this._panel?.webview.asWebviewUri(onDiskPath);
+        return match.replace(/src="[^"]*"/, `src="${newSrc}"`);
+      }
+    );
+
     // Use a nonce to only allow a specific script to be run.
     const nonce = getNonce();
 
     // for showing / hiding nav buttons
     const beginning =
-      this.currentSection.index === 0 && this.currentSection.currentStep === 0;
+      this._quickstart.currentSection.index === 0 && this._quickstart.currentSection.currentStep === 0;
     const end =
-      this.currentSection.index === this.sections.length - 1 &&
-      this.currentSection.isDone();
-    const latestSection = this.currentSection.index === this._latestSectionIdx;
+      this._quickstart.currentSection.index === this._quickstart.sections.length - 1 &&
+      this._quickstart.currentSection.isDone();
+    const latestSection = this._quickstart.currentSection.index === this._quickstart.latestSectionIndex;
     let nextArrow;
     // if (end || !this.currentSection.hasBeenDone()) {
     if (end) {
@@ -489,20 +460,20 @@ export default class QuickstartOrchestrator {
     </header>
     <main>
       ${docContent}
-      ${this.currentSection.html()}
+      ${this._quickstart.currentSection.html()}
     </main>
     <footer class="navigation-buttons"> 
      <div id="progress-bar">
         <div id="progress" data-current="${
-          this.currentSection.index + 1
-        }" data-end="${this.sections.length}"></div>
+          this._quickstart.currentSection.index + 1
+        }" data-end="${this._quickstart.sections.length}"></div>
         </div>
       <nav>
         <button class="arrow secondary ${
           beginning ? "hide" : ""
         }" id="previous"><i class="codicon codicon-chevron-left"></i></button>
-        <p>Section ${this.currentSection.index + 1} of ${
-      this.sections.length
+        <p>Section ${this._quickstart.currentSection.index + 1} of ${
+      this._quickstart.sections.length
     }</p>
           ${nextArrow}
       </nav> 
