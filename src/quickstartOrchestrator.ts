@@ -50,13 +50,13 @@ export default class QuickstartOrchestrator {
     return this._panel as vscode.WebviewPanel;
   }
 
-  public async resetCode() {
-    const doc = this.currentlyDisplayingDocument;
-    if (!doc) {
+  public async restoreCodeToBackup() {
+    const activeCodePanelDocument = this.currentlyDisplayingDocument;
+    if (!activeCodePanelDocument) {
       return;
     }
 
-    await vscode.window.showTextDocument(doc, {
+    await vscode.window.showTextDocument(activeCodePanelDocument, {
       preview: true,
       preserveFocus: false,
       viewColumn: vscode.ViewColumn.Two,
@@ -65,18 +65,18 @@ export default class QuickstartOrchestrator {
     const activeEditor = vscode.window.activeTextEditor;
 
     // Guard against errors when file doesn't have backup or no activeEditor
-    if (!fileHasBackup(doc.uri.fsPath) || !activeEditor) {
+    if (!fileHasBackup(activeCodePanelDocument.uri.fsPath) || !activeEditor) {
       return;
     }
 
     // Grab backup content path for current document to replace active document's content)
-    const backupPath = doc.uri.fsPath.replace("sections", "sectionsBackup");
+    const backupPath = activeCodePanelDocument.uri.fsPath.replace("sections", "sectionsBackup");
 
     //get the text from the backup
     const originalCode = readFileSync(backupPath, { encoding: "utf-8" });
 
     // A range that covers the entire document
-    const documentRange = new vscode.Range(0, 0, doc.lineCount, Infinity);
+    const documentRange = new vscode.Range(0, 0, activeCodePanelDocument.lineCount, Infinity);
 
     activeEditor.edit((editBuilder) => {
       editBuilder.replace(documentRange, originalCode);
@@ -288,7 +288,7 @@ export default class QuickstartOrchestrator {
           break;
         }
         case "resetCodeFile": {
-          this.resetCode();
+          this.restoreCodeToBackup();
           break;
         }
         case "previous": {
@@ -303,7 +303,7 @@ export default class QuickstartOrchestrator {
     event: vscode.TextDocumentChangeEvent | vscode.TextEditor
   ) {
     const filePath = event.document.uri.fsPath;
-    // Checks if code matches and re-renders panel
+    // If backup exists, rerender Doc panel if necessary
     if (fileBackupPath(filePath)) {
       const codeMatch = this._isCodeSameAsBackup();
       
