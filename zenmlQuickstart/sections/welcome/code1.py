@@ -1,1 +1,1 @@
-print("Hello from code example 1!")ddd
+print("Hello from code example 1!")

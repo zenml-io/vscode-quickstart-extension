@@ -11,19 +11,18 @@ export default class QuickstartOrchestrator {
   public metadata: TutorialData;
   public editor: vscode.TextEditor | undefined;
   public currentlyDisplayingDocument: vscode.TextDocument | undefined;
-  private _panel: vscode.WebviewPanel | undefined;
   public sections: QuickstartSection[];
   public context: vscode.ExtensionContext;
-  public currentSectionIndex = 0;
   public currentSection: QuickstartSection;
   public codeMatchesBackup = true;
+  private _panel: vscode.WebviewPanel | undefined;
   private _terminal: vscode.Terminal | undefined;
   private _latestSectionIdx = 0;
 
   constructor(metadata: TutorialData, context: vscode.ExtensionContext) {
     this.metadata = metadata;
-    this.sections = this.metadata.sections.map((section) => {
-      return new QuickstartSection(section, context);
+    this.sections = this.metadata.sections.map((section, index) => {
+      return new QuickstartSection(section, context, index);
     });
     this.context = context;
     this.currentSection = this.sections[0];
@@ -112,10 +111,10 @@ export default class QuickstartOrchestrator {
 
   async back() {
     if (this.currentSection.currentStep === 0) {
-      this.openSection(--this.currentSectionIndex);
+      this.openSection(this.currentSection.index - 1);
     } else {
       this.currentSection.previousStep();
-      this.openSection(this.currentSectionIndex);
+      this.openSection(this.currentSection.index);
     }
   }
   // Doc Panel
@@ -156,7 +155,7 @@ export default class QuickstartOrchestrator {
 
   openNextStep() {
     this.currentSection.nextStep();
-    this.openSection(this.currentSectionIndex);
+    this.openSection(this.currentSection.index);
   }
 
   // Terminal
@@ -266,7 +265,7 @@ export default class QuickstartOrchestrator {
 
   private _setSection(index: number) {
     if (index > -1 && index < this.sections.length) {
-      this.currentSectionIndex = index;
+      // this.currentSectionIndex = index;
       this.currentSection = this.sections[index];
     } else {
       throw new Error("Invalid Index");
@@ -319,16 +318,16 @@ export default class QuickstartOrchestrator {
         }
         case "nextStep": {
           this.currentSection.nextStep();
-          this.openSection(this.currentSectionIndex);
+          this.openSection(this.currentSection.index);
           break;
         }
         case "next": {
           if (this.currentSection.isDone()) {
-            this.openSection(this.currentSectionIndex + 1);
+            this.openSection(this.currentSection.index + 1);
             this.closeTerminal();
           } else {
             this.currentSection.nextStep();
-            this.openSection(this.currentSectionIndex);
+            this.openSection(this.currentSection.index);
           }
           break;
         }
@@ -439,11 +438,11 @@ export default class QuickstartOrchestrator {
 
     // for showing / hiding nav buttons
     const beginning =
-      this.currentSectionIndex === 0 && this.currentSection.currentStep === 0;
+      this.currentSection.index === 0 && this.currentSection.currentStep === 0;
     const end =
-      this.currentSectionIndex === this.sections.length - 1 &&
+      this.currentSection.index === this.sections.length - 1 &&
       this.currentSection.isDone();
-    const latestSection = this.currentSectionIndex === this._latestSectionIdx;
+    const latestSection = this.currentSection.index === this._latestSectionIdx;
     let nextArrow;
     // if (end || !this.currentSection.hasBeenDone()) {
     if (end) {
@@ -495,14 +494,14 @@ export default class QuickstartOrchestrator {
     <footer class="navigation-buttons"> 
      <div id="progress-bar">
         <div id="progress" data-current="${
-          this.currentSectionIndex + 1
+          this.currentSection.index + 1
         }" data-end="${this.sections.length}"></div>
         </div>
       <nav>
         <button class="arrow secondary ${
           beginning ? "hide" : ""
         }" id="previous"><i class="codicon codicon-chevron-left"></i></button>
-        <p>Section ${this.currentSectionIndex + 1} of ${
+        <p>Section ${this.currentSection.index + 1} of ${
       this.sections.length
     }</p>
           ${nextArrow}
