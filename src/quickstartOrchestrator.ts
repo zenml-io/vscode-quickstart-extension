@@ -22,8 +22,7 @@ export default class QuickstartOrchestrator {
   }
 
   public start() {
-    this._codeModifiedListener();
-    this._activeTextEditorListener();
+    this._initializeRestoreCodeButtonListeners();
     vscode.window
       .createTerminal({ hideFromUser: true })
       .sendText("zenml init && zenml stack set default");
@@ -300,40 +299,15 @@ export default class QuickstartOrchestrator {
     });
   }
 
-  private _activeTextEditorListener() {
-    vscode.window.onDidChangeActiveTextEditor((event) => {
-      this.currentlyDisplayingDocument = event
-        ? event.document
-        : this.currentlyDisplayingDocument;
-      if (event) {
-        this._changeEventHandle(event);
-      }
-    });
-  }
-
-  private _codeModifiedListener() {
-    vscode.workspace.onDidChangeTextDocument((event) => {
-      if (event.contentChanges.length === 0) {
-        return;
-      }
-      this._changeEventHandle(event);
-    });
-  }
-
-  private _changeEventHandle(
+  private _checkCodeMatchAndUpdate(
     event: vscode.TextDocumentChangeEvent | vscode.TextEditor
   ) {
     const filePath = event.document.uri.fsPath;
-    if (!fileBackupPath(filePath)) {
-      // Guard against files without backup
-      this.codeMatchesBackup = true;
-      this.openDocPanel(
-        this._quickstart.currentSection.title,
-        this._quickstart.currentSection.docHTML()
-      );
-    } else {
-      // Checks if code matches and re-renders panel
-      const codeMatch = this._codeEqualsBackup();
+    // Checks if code matches and re-renders panel
+    if (fileBackupPath(filePath)) {
+      const codeMatch = this._isCodeSameAsBackup();
+      
+      // If codeMatch status changed, update flag and refresh DocPanel:
       if (codeMatch !== this.codeMatchesBackup) {
         this.codeMatchesBackup = codeMatch;
         this.openDocPanel(
@@ -344,22 +318,37 @@ export default class QuickstartOrchestrator {
     }
   }
 
-  private _codeEqualsBackup() {
-    const activeEditor = vscode.window.activeTextEditor;
-    if (!activeEditor) {
+  private _initializeRestoreCodeButtonListeners() {
+    vscode.window.onDidChangeActiveTextEditor((event) => {
+      if (event) {
+        this.currentlyDisplayingDocument = event.document;
+        this._checkCodeMatchAndUpdate(event);
+      }
+    });
+
+    vscode.workspace.onDidChangeTextDocument((event) => {
+      if (event.contentChanges.length !== 0) {
+        this._checkCodeMatchAndUpdate(event);
+      }
+    });
+  }
+
+  private _isCodeSameAsBackup() {
+    const activeCodePanel = vscode.window.activeTextEditor;
+    if (!activeCodePanel) {
       return false;
     }
 
-    const backupPath = fileBackupPath(activeEditor?.document.uri.fsPath);
+    const backupPath = fileBackupPath(activeCodePanel?.document.uri.fsPath);
 
     if (!backupPath) {
       return false;
     }
 
-    const originalContents = readFileSync(backupPath, { encoding: "utf-8" });
-    const workingFileContents = activeEditor.document.getText();
+    const backupContents = readFileSync(backupPath, { encoding: "utf-8" });
+    const workingFileContents = activeCodePanel.document.getText();
 
-    return workingFileContents === originalContents;
+    return workingFileContents === backupContents;
   }
 
   private _generateHTML(docContent: string) {
