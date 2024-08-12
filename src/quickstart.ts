@@ -2,7 +2,6 @@ import * as vscode from "vscode";
 import { QuickstartSection } from "./quickstartSection";
 import { TutorialData } from "./quickstartSection";
 
-
 export default class Quickstart {
   public currentSection: QuickstartSection;
   public sections: QuickstartSection[];
@@ -38,6 +37,4 @@ export default class Quickstart {
       this.currentSection.previousStep();
     } 
   }
-
-
 }

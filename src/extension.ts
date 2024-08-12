@@ -17,13 +17,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
   createSectionBackup(extensionUri);
 
-  // close all terminals
-  vscode.window.terminals.forEach((term) => term.dispose());
-
-  // Open the sidebar so toggle will only close it
-  // vscode.commands.executeCommand("workbench.view.explorer");
-  // vscode.commands.executeCommand("workbench.action.toggleSidebarVisibility");
-
   const quickstart = new Quickstart(quickstartMetadata, context);
   const orchestrator = new QuickstartOrchestrator(context, quickstart);
   orchestrator.start();

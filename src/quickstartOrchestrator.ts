@@ -8,22 +8,23 @@ import codeRunner from "./utils/codeRunner";
 import Quickstart from "./quickstart";
 
 export default class QuickstartOrchestrator {
-  public editor: vscode.TextEditor | undefined;
-  public currentlyDisplayingDocument: vscode.TextDocument | undefined;
-  public context: vscode.ExtensionContext;
-  public codeMatchesBackup = true;
-  private _panel: vscode.WebviewPanel | undefined;
+  private _currentlyDisplayingDocument: vscode.TextDocument | undefined;
+  private _context: vscode.ExtensionContext;
+  private _webviewFlags = { showResetCodeButton: false, alwaysShowNextButton: false, showEditTextButton: false}
+  private _codePanel: vscode.TextEditor | undefined;
+  private _webviewPanel: vscode.WebviewPanel | undefined;
   private _terminal: vscode.Terminal | undefined;
   private _quickstart: Quickstart;
 
   constructor(context: vscode.ExtensionContext, quickstart: Quickstart) {
     this._quickstart = quickstart;
-    this.context = context;
+    this._context = context;
   }
 
   public start() {
     this._closeSidebar();
     this._initializeRestoreCodeButtonListeners();
+    this._closeAllTerminals();
     this._initializeQuickstartTerminalClosedListener();
     vscode.window
       .createTerminal({ hideFromUser: true })
@@ -31,7 +32,7 @@ export default class QuickstartOrchestrator {
     this.openSection(0);
   }
 
-  // setters & getters
+  // SETTERS AND GETTERS
   public set terminal(value: vscode.Terminal | undefined) {
     this._terminal = value;
   }
@@ -44,16 +45,159 @@ export default class QuickstartOrchestrator {
     return this._terminal;
   }
 
-  public get panel(): vscode.WebviewPanel {
-    if (this._panel === undefined) {
+  public get webviewPanel(): vscode.WebviewPanel {
+    if (this._webviewPanel === undefined) {
       this._initializePanel();
     }
 
-    return this._panel as vscode.WebviewPanel;
+    return this._webviewPanel as vscode.WebviewPanel;
+  }
+
+  // QUICKSTART NAVIGATION
+  async back() {
+    this._quickstart.back();
+    this.openSection(this._quickstart.currentSection.index)
+  }
+
+  async openSection(sectionId: number) {
+    this._quickstart.setCurrentSection(sectionId);
+
+    if (this._quickstart.currentSection.code()) {
+      await vscode.commands.executeCommand("vscode.setEditorLayout", {
+        orientation: 0,
+        groups: [
+          { groups: [{}], size: 0.5 },
+          { groups: [{}], size: 0.5 },
+        ],
+      });
+      
+      this.openCodePanel(this._quickstart.currentSection.code() as string);
+    } else {
+      this.closeCurrentCodePanel();
+      await vscode.commands.executeCommand("vscode.setEditorLayout", {
+        orientation: 0,
+        groups: [{ groups: [{}], size: 1 }],
+      });
+    }
+
+    this.openWebviewPanel(
+      this._quickstart.currentSection.title,
+      this._quickstart.currentSection.docHTML()
+    );
+  }
+
+  openNextStep() {
+    this._quickstart.currentSection.nextStep();
+    this.openSection(this._quickstart.currentSection.index);
+  }
+
+  // TERMINAL
+  public closeTerminal() {
+    this.terminal?.hide();
+  }
+
+  sendTerminalCommand(command: string) {
+    this.terminal.show(true);
+    this.terminal.sendText(command);
+  }
+
+  async runCode(callback?: Function) {
+    try {
+      if (!this._codePanel) {
+        throw new Error("Editor is not defined");
+      }
+
+      const activeEditorIsCurrentEditor =
+        this._codePanel === vscode.window.activeTextEditor;
+
+      if (!activeEditorIsCurrentEditor) {
+        await vscode.window.showTextDocument(this._codePanel.document, {
+          preview: true,
+          preserveFocus: false,
+          viewColumn: vscode.ViewColumn.Two,
+        });
+      }
+
+      codeRunner(
+        this.terminal,
+        this._codePanel.document.uri,
+        () => {
+          vscode.window.showInformationMessage("Code Ran Successfully! 🎉");
+          if (callback) {
+            callback();
+          }
+          this.openNextStep();
+        },
+        () => {
+          vscode.window.showErrorMessage("Code Run Encountered an Error. ❌");
+        }
+      );
+
+      this.terminal.show(true);
+    } catch (error) {
+      vscode.window.showErrorMessage(`Failed to execute file: ${error}`);
+    }
+  }
+
+  // PANELS
+
+  openWebviewPanel(title: string, docContent: string) {
+    if (!this._webviewPanel) {
+      this._initializePanel();
+    }
+
+    // nullcheck to make typescript happy
+    if (this._webviewPanel) {
+      this._webviewPanel.title = title;
+      this._webviewPanel.webview.html = this._generateHTML(docContent);
+    }
+  }
+
+  async openCodePanel(codePath: string) {
+    const onDiskPath = path.join(this._context.extensionPath, codePath);
+    const filePath = vscode.Uri.file(onDiskPath);
+    try {
+      const document = await vscode.workspace.openTextDocument(filePath);
+      this._currentlyDisplayingDocument = document;
+      this._codePanel = await vscode.window.showTextDocument(
+        document,
+        vscode.ViewColumn.Two
+      );
+    } catch (error) {
+      vscode.window.showErrorMessage(`Failed to open file: ${error}`);
+    }
+  }
+
+  closeCurrentCodePanel() {
+    const currentEditor = this._codePanel?.document;
+    if (currentEditor) {
+      vscode.window
+        .showTextDocument(currentEditor, {
+          preview: true,
+          preserveFocus: false,
+        })
+        .then(() => {
+          return vscode.commands.executeCommand(
+            "workbench.action.closeActiveEditor"
+          );
+        });
+    }
+  }
+
+  async openEditPanel(codePath: string) {
+    const onDiskPath = path.join(this._context.extensionPath, codePath);
+    const filePath = vscode.Uri.file(onDiskPath);
+    try {
+      const document = await vscode.workspace.openTextDocument(filePath);
+      this._currentlyDisplayingDocument = document;
+      await vscode.window.showTextDocument(document, vscode.ViewColumn.Two);
+    } catch (error) {
+      vscode.window.showErrorMessage(`Failed to open file: ${error}`);
+    }
   }
 
   public async restoreCodeToBackup() {
-    const activeCodePanelDocument = this.currentlyDisplayingDocument;
+    const activeCodePanelDocument = this._currentlyDisplayingDocument;
     if (!activeCodePanelDocument) {
       return;
     }
@@ -87,151 +231,9 @@ export default class QuickstartOrchestrator {
     activeEditor.document.save();
   }
 
-  closeCurrentEditor() {
-    const currentEditor = this.editor?.document;
-    if (currentEditor) {
-      vscode.window
-        .showTextDocument(currentEditor, {
-          preview: true,
-          preserveFocus: false,
-        })
-        .then(() => {
-          return vscode.commands.executeCommand(
-            "workbench.action.closeActiveEditor"
-          );
-        });
-    }
-  }
-
-  async back() {
-    this._quickstart.back();
-    this.openSection(this._quickstart.currentSection.index)
-  }
-
-  async openSection(sectionId: number) {
-    this._quickstart.setCurrentSection(sectionId);
-
-    if (this._quickstart.currentSection.code()) {
-      await vscode.commands.executeCommand("vscode.setEditorLayout", {
-        orientation: 0,
-        groups: [
-          { groups: [{}], size: 0.5 },
-          { groups: [{}], size: 0.5 },
-        ],
-      });
-      
-      this.openCodePanel(this._quickstart.currentSection.code() as string);
-    } else {
-      this.closeCurrentEditor();
-      await vscode.commands.executeCommand("vscode.setEditorLayout", {
-        orientation: 0,
-        groups: [{ groups: [{}], size: 1 }],
-      });
-    }
-
-    this.openDocPanel(
-      this._quickstart.currentSection.title,
-      this._quickstart.currentSection.docHTML()
-    );
-  }
-
-  openNextStep() {
-    this._quickstart.currentSection.nextStep();
-    this.openSection(this._quickstart.currentSection.index);
-  }
-
-  // Terminal
-  public closeTerminal() {
-    this.terminal?.hide();
-  }
-
-  sendTerminalCommand(command: string) {
-    this.terminal.show(true);
-    this.terminal.sendText(command);
-  }
-
-  async runCode(callback?: Function) {
-    try {
-      if (!this.editor) {
-        throw new Error("Editor is not defined");
-      }
-
-      const activeEditorIsCurrentEditor =
-        this.editor === vscode.window.activeTextEditor;
-
-      if (!activeEditorIsCurrentEditor) {
-        await vscode.window.showTextDocument(this.editor.document, {
-          preview: true,
-          preserveFocus: false,
-          viewColumn: vscode.ViewColumn.Two,
-        });
-      }
-
-      codeRunner(
-        this.terminal,
-        this.editor.document.uri,
-        () => {
-          vscode.window.showInformationMessage("Code Ran Successfully! 🎉");
-          if (callback) {
-            callback();
-          }
-          this.openNextStep();
-        },
-        () => {
-          vscode.window.showErrorMessage("Code Run Encountered an Error. ❌");
-        }
-      );
-
-      this.terminal.show(true);
-    } catch (error) {
-      vscode.window.showErrorMessage(`Failed to execute file: ${error}`);
-    }
-  }
-
-  // HELPERS
-
-  openDocPanel(title: string, docContent: string) {
-    if (!this._panel) {
-      this._initializePanel();
-    }
-
-    // nullcheck to make typescript happy
-    if (this._panel) {
-      this._panel.title = title;
-      this._panel.webview.html = this._generateHTML(docContent);
-    }
-  }
-
-  async openCodePanel(codePath: string) {
-    const onDiskPath = path.join(this.context.extensionPath, codePath);
-    const filePath = vscode.Uri.file(onDiskPath);
-    try {
-      const document = await vscode.workspace.openTextDocument(filePath);
-      this.currentlyDisplayingDocument = document;
-      this.editor = await vscode.window.showTextDocument(
-        document,
-        vscode.ViewColumn.Two
-      );
-    } catch (error) {
-      vscode.window.showErrorMessage(`Failed to open file: ${error}`);
-    }
-  }
-
-  async openEditPanel(codePath: string) {
-    const onDiskPath = path.join(this.context.extensionPath, codePath);
-    const filePath = vscode.Uri.file(onDiskPath);
-    try {
-      const document = await vscode.workspace.openTextDocument(filePath);
-      this.currentlyDisplayingDocument = document;
-      await vscode.window.showTextDocument(document, vscode.ViewColumn.Two);
-    } catch (error) {
-      vscode.window.showErrorMessage(`Failed to open file: ${error}`);
-    }
-  }
-
-  // PRIVATE METHODS:
+  // INITIALIZERS
   private _initializePanel() {
-    this._panel = vscode.window.createWebviewPanel(
+    this._webviewPanel = vscode.window.createWebviewPanel(
       "zenml.markdown", // used internally - I think an identifier
       "Zenml", // displayed to user
       vscode.ViewColumn.One,
@@ -239,18 +241,94 @@ export default class QuickstartOrchestrator {
     );
 
     this._registerView();
-    this._panel.onDidDispose(() => {
-      this._panel = undefined;
+    this._webviewPanel.onDidDispose(() => {
+      this._webviewPanel = undefined;
     });
   }
 
+  private _initializeRestoreCodeButtonListeners() {
+    vscode.window.onDidChangeActiveTextEditor((event) => {
+      if (event) {
+        this._currentlyDisplayingDocument = event.document;
+        this._checkCodeMatchAndUpdateWebview(event);
+      }
+    });
+
+    vscode.workspace.onDidChangeTextDocument((event) => {
+      if (event.contentChanges.length !== 0) {
+        this._checkCodeMatchAndUpdateWebview(event);
+      }
+    });
+  }
+
+  // Updates the status of quickstart terminal if ZenML terminal 
+  // instance gets disposed of
+  private _initializeQuickstartTerminalClosedListener() {
+    this._context.subscriptions.push(
+      vscode.window.onDidCloseTerminal((closedTerminal) => {
+        if (closedTerminal === this.terminal) {
+          this.terminal = undefined;
+        }
+      })
+    );
+  }
+
+  private _closeAllTerminals() {
+     vscode.window.terminals.forEach((term) => term.dispose());
+  }
+
+  private _closeSidebar() {
+    vscode.commands.executeCommand("workbench.view.explorer");
+    vscode.commands.executeCommand("workbench.action.toggleSidebarVisibility");
+  }
+
+  // HELPERS
+  private _isCodeSameAsBackup() {
+    const activeCodePanel = vscode.window.activeTextEditor;
+    if (!activeCodePanel) {
+      return false;
+    }
+
+    const backupPath = fileBackupPath(activeCodePanel?.document.uri.fsPath);
+
+    if (!backupPath) {
+      return false;
+    }
+
+    const backupContents = readFileSync(backupPath, { encoding: "utf-8" });
+    const workingFileContents = activeCodePanel.document.getText();
+
+    return workingFileContents === backupContents;
+  }
+
+  private _checkCodeMatchAndUpdateWebview(
+    event: vscode.TextDocumentChangeEvent | vscode.TextEditor
+  ) {
+    const filePath = event.document.uri.fsPath;
+    // If backup exists, rerender Doc panel if necessary
+    if (fileBackupPath(filePath)) {
+      // Should show reset code button if current code does NOT match backup
+      const shouldShowResetCodeButton = !this._isCodeSameAsBackup();
+      
+      // If code status changed, update flag and reopen Webview Panel:
+      if (shouldShowResetCodeButton !== this._webviewFlags.showResetCodeButton) {
+        this._webviewFlags.showResetCodeButton = shouldShowResetCodeButton;
+        this.openWebviewPanel(
+          this._quickstart.currentSection.title,
+          this._quickstart.currentSection.docHTML()
+        );
+      }
+    }
+  }
+
+  // WEBVIEW 
   private _registerView() {
-    this.panel.webview.options = {
+    this.webviewPanel.webview.options = {
       enableScripts: true,
-      localResourceRoots: [this.context.extensionUri],
+      localResourceRoots: [this._context.extensionUri],
     };
 
-    this.panel.webview.onDidReceiveMessage(async (data) => {
+    this.webviewPanel.webview.onDidReceiveMessage(async (data) => {
       switch (data.type) {
         case "openSection": {
           this.openSection(data.id);
@@ -301,96 +379,28 @@ export default class QuickstartOrchestrator {
     });
   }
 
-  private _checkCodeMatchAndUpdate(
-    event: vscode.TextDocumentChangeEvent | vscode.TextEditor
-  ) {
-    const filePath = event.document.uri.fsPath;
-    // If backup exists, rerender Doc panel if necessary
-    if (fileBackupPath(filePath)) {
-      const codeMatch = this._isCodeSameAsBackup();
-      
-      // If codeMatch status changed, update flag and refresh DocPanel:
-      if (codeMatch !== this.codeMatchesBackup) {
-        this.codeMatchesBackup = codeMatch;
-        this.openDocPanel(
-          this._quickstart.currentSection.title,
-          this._quickstart.currentSection.docHTML()
-        );
-      }
-    }
-  }
-
-  private _initializeRestoreCodeButtonListeners() {
-    vscode.window.onDidChangeActiveTextEditor((event) => {
-      if (event) {
-        this.currentlyDisplayingDocument = event.document;
-        this._checkCodeMatchAndUpdate(event);
-      }
-    });
-
-    vscode.workspace.onDidChangeTextDocument((event) => {
-      if (event.contentChanges.length !== 0) {
-        this._checkCodeMatchAndUpdate(event);
-      }
-    });
-  }
-
-  // Updates the status of quickstart terminal if ZenML terminal 
-  // instance gets disposed of
-  private _initializeQuickstartTerminalClosedListener() {
-    this.context.subscriptions.push(
-      vscode.window.onDidCloseTerminal((closedTerminal) => {
-        if (closedTerminal === this.terminal) {
-          this.terminal = undefined;
-        }
-      })
-    );
-  }
-
-  private _closeSidebar() {
-    vscode.commands.executeCommand("workbench.view.explorer");
-    vscode.commands.executeCommand("workbench.action.toggleSidebarVisibility");
-  }
-
-  private _isCodeSameAsBackup() {
-    const activeCodePanel = vscode.window.activeTextEditor;
-    if (!activeCodePanel) {
-      return false;
-    }
-
-    const backupPath = fileBackupPath(activeCodePanel?.document.uri.fsPath);
-
-    if (!backupPath) {
-      return false;
-    }
-
-    const backupContents = readFileSync(backupPath, { encoding: "utf-8" });
-    const workingFileContents = activeCodePanel.document.getText();
-
-    return workingFileContents === backupContents;
-  }
-
   private _generateHTML(docContent: string) {
-    const webview = this.panel.webview;
+    const webview = this.webviewPanel.webview;
+    
 
     // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
     const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this.context.extensionUri, "media", "main.js")
+      vscode.Uri.joinPath(this._context.extensionUri, "media", "main.js")
     );
 
     const styleResetUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this.context.extensionUri, "media", "reset.css")
+      vscode.Uri.joinPath(this._context.extensionUri, "media", "reset.css")
     );
     const styleVSCodeUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this.context.extensionUri, "media", "vscode.css")
+      vscode.Uri.joinPath(this._context.extensionUri, "media", "vscode.css")
     );
     const styleMainUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this.context.extensionUri, "media", "main.css")
+      vscode.Uri.joinPath(this._context.extensionUri, "media", "main.css")
     );
 
     const codiconsUri = webview.asWebviewUri(
       vscode.Uri.joinPath(
-        this.context.extensionUri,
+        this._context.extensionUri,
         "node_modules",
         "@vscode/codicons",
         "dist",
@@ -404,10 +414,10 @@ export default class QuickstartOrchestrator {
       /<img\s+[^>]*src="([^"]*)"[^>]*>/g,
       (match, originalSrc) => {
         const onDiskPath = vscode.Uri.joinPath(
-          this.context.extensionUri,
+          this._context.extensionUri,
           originalSrc
         );
-        const newSrc = this._panel?.webview.asWebviewUri(onDiskPath);
+        const newSrc = this._webviewPanel?.webview.asWebviewUri(onDiskPath);
         return match.replace(/src="[^"]*"/, `src="${newSrc}"`);
       }
     );
@@ -416,22 +426,25 @@ export default class QuickstartOrchestrator {
     const nonce = getNonce();
 
     // for showing / hiding nav buttons
-    const beginning =
+    const isBeginning =
       this._quickstart.currentSection.index === 0 && this._quickstart.currentSection.currentStep === 0;
-    const end =
+    const isEnd =
       this._quickstart.currentSection.index === this._quickstart.sections.length - 1 &&
       this._quickstart.currentSection.isDone();
-    const latestSection = this._quickstart.currentSection.index === this._quickstart.latestSectionIndex;
+    const isLatestSection = this._quickstart.currentSection.index === this._quickstart.latestSectionIndex;
+    
     let nextArrow;
-    // if (end || !this.currentSection.hasBeenDone()) {
-    if (end) {
-      // for develop only
+    if ((isEnd || !this._quickstart.currentSection.hasBeenDone()) && !this._webviewFlags.alwaysShowNextButton) {
+      // Hide the next arrow
       nextArrow = `<button class="arrow hide" id="next"><i class="codicon codicon-chevron-right"></i></button>`;
-    } else if (latestSection) {
+    } else if (isLatestSection) {
+      // Show the next arrow as a primary button
       nextArrow = `<button class="arrow" id="next">Next<i class="codicon codicon-chevron-right"></i></button>`;
     } else {
+      // Show the next arrow as a secondary button
       nextArrow = `<button class="arrow secondary" id="next"><i class="codicon codicon-chevron-right"></i></button>`;
     }
+
     return /*html*/ `
   <!DOCTYPE html>
   <html lang="en">
@@ -460,15 +473,14 @@ export default class QuickstartOrchestrator {
   <body>
     <header class="action-buttons">
       <!-- edit text for development only -->
-      <button class="secondary" id="edit-text">edit text</button>
+      <button class="secondary ${this._webviewFlags.showEditTextButton ? "": "hide"}" id="edit-text">edit text</button>
       <button class="reset-code secondary ${
-        this.codeMatchesBackup ? "hide" : ""
+        this._webviewFlags.showResetCodeButton ? "" : "hide"
       }"><i class="codicon codicon-history"></i>reset code</button>
       <button class="run-code"><i class="codicon codicon-play"></i>run code</button>
     </header>
     <main>
       ${docContent}
-      ${this._quickstart.currentSection.html()}
     </main>
     <footer class="navigation-buttons"> 
      <div id="progress-bar">
@@ -478,7 +490,7 @@ export default class QuickstartOrchestrator {
         </div>
       <nav>
         <button class="arrow secondary ${
-          beginning ? "hide" : ""
+          isBeginning ? "hide" : ""
         }" id="previous"><i class="codicon codicon-chevron-left"></i></button>
         <p>Section ${this._quickstart.currentSection.index + 1} of ${
       this._quickstart.sections.length
