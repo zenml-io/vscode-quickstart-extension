@@ -19,6 +19,11 @@ export default class QuickstartOrchestrator {
   constructor(context: vscode.ExtensionContext, quickstart: Quickstart) {
     this._quickstart = quickstart;
     this._context = context;
+    
+    if (this._context.extensionMode === vscode.ExtensionMode.Production) {
+      this._webviewFlags.alwaysShowNextButton = false;
+      this._webviewFlags.showEditTextButton = false;
+    }
   }
 
   public start() {
