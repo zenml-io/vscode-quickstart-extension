@@ -20,18 +20,24 @@ export interface Section {
   steps: SectionStep[];
 }
 
-export default class QuickstartSection {
+export class QuickstartSection {
   public title: string;
   public context: vscode.ExtensionContext;
   public description: string;
   public currentStep: number;
+  public readonly index: number;
   private _steps: SectionStep[];
   private _done = false;
   private _hasBeenDone = false;
 
-  constructor(section: Section, context: vscode.ExtensionContext) {
+  constructor(
+    section: Section,
+    context: vscode.ExtensionContext,
+    index: number
+  ) {
     this.context = context;
     this.title = section.title;
+    this.index = index;
     this.description = section.description;
     this._steps = section.steps;
     this._convertStepMarkdown();
